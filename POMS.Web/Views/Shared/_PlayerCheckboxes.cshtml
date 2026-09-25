@@ -1,0 +1,6 @@
+@using Microsoft.EntityFrameworkCore
+@inject POMS.Data.ApplicationDbContext Db
+@{
+    var players = await Db.Players.Where(p => p.IsActive).OrderBy(p => p.FullName).ToListAsync();
+}
+<div class="row g-2">@foreach (var player in players) { <div class="col-md-6"><label class="border rounded p-2 d-flex gap-2 align-items-center"><input class="form-check-input m-0" type="checkbox" name="playerIds" value="@player.Id" /> <span>@player.FullName <small class="text-muted">(@player.Role)</small></span></label></div> }</div>

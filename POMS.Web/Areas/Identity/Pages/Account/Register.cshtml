@@ -1,0 +1,7 @@
+@page
+@using POMS.Web.Areas.Identity.Pages.Account
+@model RegisterModel
+@{
+    ViewData["Title"] = "Create account";
+}
+<section class="auth-card"><div class="auth-brand"><span class="brand-mark">CA</span><span>Cricket Auction <b>Manager</b></span></div><span class="eyebrow">Workspace access</span><h1>Create your account.</h1><p class="text-muted">Register to access the dashboard, auction controls, and live console.</p><form method="post" class="auth-form"><div asp-validation-summary="ModelOnly" class="text-danger"></div><label class="form-label" asp-for="Input.Email"></label><input asp-for="Input.Email" class="form-control form-control-lg" autocomplete="username" /><span asp-validation-for="Input.Email" class="text-danger"></span><label class="form-label" asp-for="Input.Password"></label><input asp-for="Input.Password" class="form-control form-control-lg" autocomplete="new-password" /><span asp-validation-for="Input.Password" class="text-danger"></span><label class="form-label" asp-for="Input.ConfirmPassword"></label><input asp-for="Input.ConfirmPassword" class="form-control form-control-lg" autocomplete="new-password" /><span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span><button class="btn btn-primary btn-lg w-100 mt-3" type="submit">Create account</button></form><p class="auth-switch">Already have an account? <a asp-page="./Login">Sign in</a></p></section>
