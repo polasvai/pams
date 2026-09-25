@@ -1,3 +1,65 @@
 @model Player
-@{ ViewData["Title"] = "Add player"; }
-<div class="card p-4"><h1 class="h3 mb-3">Add player</h1><form asp-action="Create" method="post"><div asp-validation-summary="All" class="text-danger"></div><div class="row g-3"><div class="col-md-6"><label class="form-label">Full name</label><input asp-for="FullName" class="form-control" /></div><div class="col-md-3"><label class="form-label">Role</label><select asp-for="Role" asp-items="Html.GetEnumSelectList<PlayerRole>()" class="form-select"></select></div><div class="col-md-3"><label class="form-label">Skill rating (1–100)</label><input asp-for="SkillRating" class="form-control" /></div><div class="col-md-4"><label class="form-label">Nationality</label><input asp-for="Nationality" class="form-control" /></div><div class="col-md-4"><label class="form-label">Batting style</label><input asp-for="BattingStyle" class="form-control" /></div><div class="col-md-4"><label class="form-label">Bowling style</label><input asp-for="BowlingStyle" class="form-control" /></div><div class="col-md-4"><label class="form-label">Base price</label><input asp-for="BasePrice" class="form-control" /></div></div><div class="mt-4"><button class="btn btn-primary">Save player</button> <a class="btn btn-link" asp-action="Index">Cancel</a></div></form></div>
+@{ ViewData["Title"] = "Add New Player"; }
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <span class="eyebrow">Talent Roster</span>
+                <h1 class="h2 font-weight-bold mb-0">Register New Player</h1>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" asp-action="Index">← Back to Players</a>
+        </div>
+
+        <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <label class="form-label font-weight-bold" asp-for="FullName">Player Full Name</label>
+                        <input asp-for="FullName" class="form-control form-control-lg" placeholder="e.g. Rohit Sharma" required />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="Nationality">Nationality / Country</label>
+                        <input asp-for="Nationality" class="form-control form-control-lg" placeholder="e.g. India" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="Role">Primary Role</label>
+                        <select asp-for="Role" asp-items="Html.GetEnumSelectList<PlayerRole>()" class="form-select form-select-lg"></select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="SkillRating">Skill Rating (1–100)</label>
+                        <input asp-for="SkillRating" type="number" min="1" max="100" class="form-control form-control-lg" placeholder="85" required />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="BasePrice">Base Price (₹)</label>
+                        <input asp-for="BasePrice" type="number" step="1000" min="0" class="form-control form-control-lg" placeholder="2000000" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="BattingStyle">Batting Style</label>
+                        <input asp-for="BattingStyle" class="form-control" placeholder="e.g. Right-hand bat" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="BowlingStyle">Bowling Style</label>
+                        <input asp-for="BowlingStyle" class="form-control" placeholder="e.g. Right-arm fast" />
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-light" asp-action="Index">Cancel</a>
+                    <button class="btn btn-primary px-4 font-weight-bold" type="submit">Save Player</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

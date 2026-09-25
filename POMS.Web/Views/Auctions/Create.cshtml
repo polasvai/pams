@@ -1,3 +1,55 @@
 @model Auction
-@{ ViewData["Title"] = "Create auction"; }
-<div class="card p-4"><h1 class="h3 mb-3">Create auction</h1><form asp-action="Create" method="post"><div asp-validation-summary="All" class="text-danger"></div><div class="row g-3"><div class="col-md-8"><label class="form-label">Auction name</label><input asp-for="Name" class="form-control" placeholder="e.g. 2026 Premier Cricket Auction" /></div><div class="col-md-4"><label class="form-label">Minimum increment</label><input asp-for="MinimumIncrement" class="form-control" /></div><div class="col-md-6"><label class="form-label">Starts at</label><input asp-for="StartsAt" type="datetime-local" class="form-control" /></div><div class="col-md-6"><label class="form-label">Ends at</label><input asp-for="EndsAt" type="datetime-local" class="form-control" /></div></div><div class="mt-4"><button class="btn btn-primary">Save draft</button> <a class="btn btn-link" asp-action="Index">Cancel</a></div></form></div>
+@{ ViewData["Title"] = "Create Auction Event"; }
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <span class="eyebrow">Event Planning</span>
+                <h1 class="h2 font-weight-bold mb-0">Create Auction Event</h1>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" asp-action="Index">← Back to Auctions</a>
+        </div>
+
+        <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <label class="form-label font-weight-bold" asp-for="Name">Auction Event Title</label>
+                        <input asp-for="Name" class="form-control form-control-lg" placeholder="e.g. 2026 Premier T20 Mega Auction" required />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="MinimumIncrement">Min Bid Increment (₹)</label>
+                        <input asp-for="MinimumIncrement" type="number" step="5000" min="1000" class="form-control form-control-lg" value="50000" required />
+                        <span asp-validation-for="MinimumIncrement" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="StartsAt">Scheduled Start Date & Time</label>
+                        <input asp-for="StartsAt" type="datetime-local" class="form-control form-control-lg" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="EndsAt">Estimated Closing Date & Time (Optional)</label>
+                        <input asp-for="EndsAt" type="datetime-local" class="form-control form-control-lg" />
+                    </div>
+                </div>
+
+                <div class="alert alert-light border mt-4 mb-0 p-3 rounded-3 small text-muted">
+                    ℹ️ <strong>Workflow:</strong> This creates a <strong>Draft</strong> auction. After creating, you will be able to select and assign players from the talent pool into the lot queue before launching the live room.
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-light" asp-action="Index">Cancel</a>
+                    <button class="btn btn-primary px-4 font-weight-bold" type="submit">Create Draft Auction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

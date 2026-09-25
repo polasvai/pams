@@ -1,3 +1,52 @@
 @model Team
-@{ ViewData["Title"] = "Add team"; }
-<div class="card p-4"><h1 class="h3 mb-3">Add team</h1><form asp-action="Create" method="post"><div asp-validation-summary="All" class="text-danger"></div><div class="row g-3"><div class="col-md-6"><label class="form-label">Team name</label><input asp-for="Name" class="form-control" /></div><div class="col-md-3"><label class="form-label">Short code</label><input asp-for="ShortCode" class="form-control" maxlength="10" /></div><div class="col-md-3"><label class="form-label">Total purse</label><input asp-for="TotalBudget" class="form-control" /></div><div class="col-12"><label class="form-label">Logo URL</label><input asp-for="LogoUrl" class="form-control" /></div></div><div class="mt-4"><button class="btn btn-primary">Save team</button> <a class="btn btn-link" asp-action="Index">Cancel</a></div></form></div>
+@{ ViewData["Title"] = "Add Franchise Team"; }
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <span class="eyebrow">Franchise Setup</span>
+                <h1 class="h2 font-weight-bold mb-0">Create New Team</h1>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" asp-action="Index">← Back to Teams</a>
+        </div>
+
+        <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <label class="form-label font-weight-bold" asp-for="Name">Franchise Team Name</label>
+                        <input asp-for="Name" class="form-control form-control-lg" placeholder="e.g. Kolkata Knights" required />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="ShortCode">Short Code (2–4 chars)</label>
+                        <input asp-for="ShortCode" class="form-control form-control-lg text-uppercase" placeholder="KK" maxlength="10" required />
+                        <span asp-validation-for="ShortCode" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label font-weight-bold" asp-for="TotalBudget">Total Auction Purse Budget (₹)</label>
+                        <input asp-for="TotalBudget" type="number" step="100000" min="0" class="form-control form-control-lg" placeholder="120000000" required />
+                        <small class="text-muted">This purse budget is strictly checked during the live auction against incoming bids.</small>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label font-weight-bold" asp-for="LogoUrl">Franchise Logo URL (Optional)</label>
+                        <input asp-for="LogoUrl" class="form-control" placeholder="https://example.com/logo.png" />
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-light" asp-action="Index">Cancel</a>
+                    <button class="btn btn-primary px-4 font-weight-bold" type="submit">Create Team</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

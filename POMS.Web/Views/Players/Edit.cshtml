@@ -1,3 +1,79 @@
 @model Player
-@{ ViewData["Title"] = "Edit player"; }
-<div class="card p-4"><h1 class="h3 mb-3">Edit player</h1><form asp-action="Edit" method="post"><input asp-for="Id" type="hidden" /><div asp-validation-summary="All" class="text-danger"></div><div class="row g-3"><div class="col-md-6"><label class="form-label">Full name</label><input asp-for="FullName" class="form-control" /></div><div class="col-md-3"><label class="form-label">Role</label><select asp-for="Role" asp-items="Html.GetEnumSelectList<PlayerRole>()" class="form-select"></select></div><div class="col-md-3"><label class="form-label">Skill rating</label><input asp-for="SkillRating" class="form-control" /></div><div class="col-md-4"><label class="form-label">Nationality</label><input asp-for="Nationality" class="form-control" /></div><div class="col-md-4"><label class="form-label">Batting style</label><input asp-for="BattingStyle" class="form-control" /></div><div class="col-md-4"><label class="form-label">Bowling style</label><input asp-for="BowlingStyle" class="form-control" /></div><div class="col-md-4"><label class="form-label">Base price</label><input asp-for="BasePrice" class="form-control" /></div><div class="col-md-4 d-flex align-items-end"><div class="form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label">Active</label></div></div></div><div class="mt-4"><button class="btn btn-primary">Save changes</button> <a class="btn btn-link" asp-action="Index">Cancel</a></div></form></div>
+@{ ViewData["Title"] = "Edit Player - " + Model.FullName; }
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <span class="eyebrow">Talent Roster</span>
+                <h1 class="h2 font-weight-bold mb-0">Edit Player Profile</h1>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" asp-action="Index">← Back to Players</a>
+        </div>
+
+        <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
+            <form asp-action="Edit" method="post">
+                <input asp-for="Id" type="hidden" />
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <label class="form-label font-weight-bold" asp-for="FullName">Player Full Name</label>
+                        <input asp-for="FullName" class="form-control form-control-lg" required />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="Nationality">Nationality</label>
+                        <input asp-for="Nationality" class="form-control form-control-lg" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="Role">Primary Role</label>
+                        <select asp-for="Role" asp-items="Html.GetEnumSelectList<PlayerRole>()" class="form-select form-select-lg"></select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="SkillRating">Skill Rating (1–100)</label>
+                        <input asp-for="SkillRating" type="number" min="1" max="100" class="form-control form-control-lg" required />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="BasePrice">Base Price (₹)</label>
+                        <input asp-for="BasePrice" type="number" step="1000" min="0" class="form-control form-control-lg" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="BattingStyle">Batting Style</label>
+                        <input asp-for="BattingStyle" class="form-control" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="BowlingStyle">Bowling Style</label>
+                        <input asp-for="BowlingStyle" class="form-control" />
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check form-switch p-3 bg-light rounded-3">
+                            <input asp-for="IsActive" class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="activeSwitch" />
+                            <label class="form-check-label font-weight-bold" for="activeSwitch">Active in Talent Pool</label>
+                            <small class="d-block text-muted">Inactive players will not be available for selection in new auction lots.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <button class="btn btn-outline-danger btn-sm" type="submit" asp-action="Delete" asp-route-id="@Model.Id" onclick="return confirm('Archive this player?');">
+                        Archive Player
+                    </button>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-light" asp-action="Index">Cancel</a>
+                        <button class="btn btn-primary px-4 font-weight-bold" type="submit">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
