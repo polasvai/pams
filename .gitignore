@@ -32,3 +32,8 @@ bld/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# SQLite temporary files
+*.db-shm
+*.db-wal
+

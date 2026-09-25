@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A professional cricket player auction management workspace." />
+    <meta name="description" content="Cricket Player Auction Management System - Professional workspace for managing team budgets, player pools, and live auction consoles." />
     <title>@ViewData["Title"] · Cricket Auction Manager</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,29 +14,95 @@
 </head>
 @{
     var currentPath = Context.Request.Path.Value ?? "/";
-    var isAuthPage = currentPath.StartsWith("/Identity/Account/Login", StringComparison.OrdinalIgnoreCase) || currentPath.StartsWith("/Identity/Account/Register", StringComparison.OrdinalIgnoreCase);
-    var isPublicPage = currentPath == "/" || currentPath.StartsWith("/Players", StringComparison.OrdinalIgnoreCase) || currentPath.StartsWith("/Teams", StringComparison.OrdinalIgnoreCase) || currentPath.StartsWith("/Auctions", StringComparison.OrdinalIgnoreCase);
+    var isAuthPage = currentPath.StartsWith("/Identity/Account", StringComparison.OrdinalIgnoreCase);
+    var isLandingPage = currentPath == "/";
 }
-<body class="@(isPublicPage ? "public-page" : isAuthPage ? "auth-page" : "admin-body")">
+<body class="@(isAuthPage ? "auth-page" : "app-body")">
+
 @if (isAuthPage)
 {
-    <main class="auth-shell">@RenderBody()</main>
-}
-else if (isPublicPage)
-{
-    <nav class="navbar navbar-expand-lg site-nav"><div class="container"><a class="navbar-brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">CA</span><span>Cricket Auction <b>Manager</b></span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button><div class="collapse navbar-collapse" id="mainNav"><ul class="navbar-nav ms-auto align-items-lg-center">@if (User.Identity?.IsAuthenticated == true) { <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li> }<li class="nav-item"><a class="nav-link" asp-controller="Players" asp-action="Index">Players</a></li><li class="nav-item"><a class="nav-link" asp-controller="Teams" asp-action="Index">Teams</a></li><li class="nav-item"><a class="nav-link" asp-controller="Auctions" asp-action="Index">Auctions</a></li><li class="nav-item ms-lg-2"><a class="btn btn-primary btn-sm nav-cta" asp-controller="Auctions" asp-action="Live">Open live console <span>↗</span></a></li></ul><partial name="_LoginPartial" /></div></div></nav>
-    <main>@RenderBody()</main>
+    <main class="auth-shell">
+        @RenderBody()
+    </main>
 }
 else
 {
-    <div class="admin-layout">
-        <aside class="admin-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar"><div class="sidebar-brand"><a asp-controller="Dashboard" asp-action="Index"><span class="brand-mark">CA</span><span>Cricket Auction <b>Manager</b></span></a><button class="sidebar-close d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar">×</button></div><div class="sidebar-label">Workspace</div><nav class="sidebar-nav"><a class="active" asp-controller="Dashboard" asp-action="Index"><span>▦</span> Dashboard</a><a asp-controller="Players" asp-action="Index"><span>♙</span> Players</a><a asp-controller="Teams" asp-action="Index"><span>◉</span> Teams</a><a asp-controller="Auctions" asp-action="Index"><span>◈</span> Auctions</a></nav><div class="sidebar-label">Operations</div><nav class="sidebar-nav"><a class="sidebar-live" asp-controller="Auctions" asp-action="Live"><span>●</span> Live console</a></nav><div class="sidebar-bottom"><div class="sidebar-help"><span>Need a hand?</span><strong>Open the operator guide</strong><small>Keep the room moving.</small></div></div></aside>
-        <div class="admin-main"><header class="admin-topbar"><button class="sidebar-collapse" id="sidebarCollapse" type="button" aria-label="Collapse sidebar">☰</button><button class="sidebar-toggle d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-label="Open navigation">☰</button><div class="topbar-context"><span class="topbar-kicker">Auction operations</span><strong>@ViewData["Title"]</strong></div><div class="topbar-actions"><span class="topbar-date">@DateTime.Now.ToString("dd MMM yyyy")</span><partial name="_LoginPartial" /></div></header><main class="admin-content"><div class="app-page">@RenderBody()</div></main><footer class="admin-footer"><span>Cricket Auction Manager</span><span>AdminLTE-inspired workspace · .NET 8 · SQLite</span></footer></div>
-    </div>
+    <!-- Unified Main Header Navigation -->
+    <header class="site-nav navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-lg-4">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark">CA</span>
+                <span>Cricket Auction <b>Manager</b></span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto ms-lg-4 align-items-lg-center gap-1">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPath.StartsWith("/Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Dashboard" asp-action="Index">
+                                📊 Dashboard
+                            </a>
+                        </li>
+                    }
+                    <li class="nav-item">
+                        <a class="nav-link @(currentPath.StartsWith("/Players", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Players" asp-action="Index">
+                            🏏 Players
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentPath.StartsWith("/Teams", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Teams" asp-action="Index">
+                            🛡️ Teams
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentPath.StartsWith("/Auctions", StringComparison.OrdinalIgnoreCase) && !currentPath.Contains("/Live") ? "active" : "")" asp-controller="Auctions" asp-action="Index">
+                            📋 Auctions
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                    <a class="btn btn-warning nav-cta d-flex align-items-center gap-2 fw-bold" asp-controller="Auctions" asp-action="Live">
+                        <span class="live-dot animate-pulse"></span> Live Console
+                    </a>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        @if (!isLandingPage)
+        {
+            <div class="page-shell">
+                @RenderBody()
+            </div>
+        }
+        else
+        {
+            @RenderBody()
+        }
+    </main>
+
+    <footer class="site-footer mt-auto py-4">
+        <div class="container-fluid px-lg-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div>
+                <span class="fw-bold">Cricket Auction Manager</span> · <small class="text-muted-light">Powered by ASP.NET Core 8 & Entity Framework Core</small>
+            </div>
+            <div class="text-muted-light small">
+                © @DateTime.Now.Year POMS · All rights reserved.
+            </div>
+        </div>
+    </footer>
 }
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

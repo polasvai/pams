@@ -1,5 +1,148 @@
 @model Auction
-@{ ViewData["Title"] = Model.Name; }
-<div class="d-flex justify-content-between align-items-center mb-3"><div><h1 class="h3">@Model.Name</h1><span class="badge @(Model.Status == AuctionStatus.Live ? "bg-success" : Model.Status == AuctionStatus.Paused ? "bg-warning text-dark" : "bg-secondary")">@Model.Status</span></div><a class="btn btn-link" asp-action="Index">Back to auctions</a></div>
-@if (TempData["Success"] is string success) { <div class="alert alert-success">@success</div> } @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
-<div class="row g-4 auction-details"><div class="col-lg-7"><div class="card p-4"><h2 class="h5">Auction lots</h2><div class="table-responsive"><table class="table"><thead><tr><th>#</th><th>Player</th><th>Role</th><th>Status</th><th>Price</th></tr></thead><tbody>@foreach (var lot in Model.AuctionPlayers.OrderBy(x => x.LotNumber)) { <tr><td>@lot.LotNumber</td><td>@lot.Player.FullName</td><td>@lot.Player.Role</td><td>@lot.Status</td><td>₹@(lot.SoldPrice?.ToString("N0") ?? "-")</td></tr> }</tbody></table></div></div></div><div class="col-lg-5"><div class="card p-4 mb-3"><h2 class="h5">Auction controls</h2><div class="d-grid gap-2">@if (Model.Status == AuctionStatus.Draft) { <form asp-action="Start" asp-route-id="@Model.Id"><button class="btn btn-success">Start auction</button></form> } @if (Model.Status == AuctionStatus.Live) { <form asp-action="Status" asp-route-id="@Model.Id"><input type="hidden" name="status" value="Paused" /><button class="btn btn-warning">Pause auction</button></form> } @if (Model.Status == AuctionStatus.Paused) { <form asp-action="Status" asp-route-id="@Model.Id"><input type="hidden" name="status" value="Live" /><button class="btn btn-success">Resume auction</button></form><a class="btn btn-primary" asp-action="Live" asp-route-id="@Model.Id">Open live console</a> } @if (Model.Status == AuctionStatus.Live || Model.Status == AuctionStatus.Paused) { <form asp-action="Status" asp-route-id="@Model.Id"><input type="hidden" name="status" value="Completed" /><button class="btn btn-outline-danger">Complete auction</button></form> }</div></div>@if (Model.Status == AuctionStatus.Draft) { <div class="card p-4"><h2 class="h5">Add players to auction</h2><form asp-action="AddPlayers" asp-route-id="@Model.Id" method="post"><div class="mb-3">@await Html.PartialAsync("_PlayerCheckboxes")</div><button class="btn btn-primary">Add selected players</button></form></div> }</div></div>
+@{
+    ViewData["Title"] = Model.Name;
+    var statusClass = Model.Status == AuctionStatus.Paused ? "status-paused" : Model.Status == AuctionStatus.Live ? "status-live" : Model.Status == AuctionStatus.Completed ? "status-completed" : "status-draft";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="status-pill @statusClass">@Model.Status</span>
+            <span class="text-muted small">Min Increment: ₹@Model.MinimumIncrement.ToString("N0")</span>
+        </div>
+        <h1 class="h2 font-weight-bold mb-0">@Model.Name</h1>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-action="Index">← Back to Auctions</a>
+        @if (Model.Status == AuctionStatus.Live || Model.Status == AuctionStatus.Paused)
+        {
+            <a class="btn btn-warning font-weight-bold" asp-action="Live" asp-route-id="@Model.Id">Open Live Console ↗</a>
+        }
+    </div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✓ @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        ⚠️ @error
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Left Column: Auction Lots Table -->
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 font-weight-bold mb-0">Auction Lots</h2>
+                <span class="badge bg-light text-dark border">@Model.AuctionPlayers.Count Lot(s)</span>
+            </div>
+
+            @if (Model.AuctionPlayers.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Player</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th class="text-end">Sold Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var lot in Model.AuctionPlayers.OrderBy(x => x.LotNumber))
+                            {
+                                <tr>
+                                    <td class="font-weight-bold">#@lot.LotNumber</td>
+                                    <td>
+                                        <strong class="d-block">@lot.Player.FullName</strong>
+                                        <small class="text-muted">Base: ₹@lot.Player.BasePrice.ToString("N0")</small>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark">@lot.Player.Role</span></td>
+                                    <td>
+                                        <span class="badge @(lot.Status == AuctionPlayerStatus.Sold ? "bg-success" : lot.Status == AuctionPlayerStatus.OnAuction ? "bg-warning text-dark" : lot.Status == AuctionPlayerStatus.Unsold ? "bg-danger" : "bg-secondary")">
+                                            @lot.Status
+                                        </span>
+                                    </td>
+                                    <td class="text-end font-weight-bold">
+                                        @(lot.SoldPrice.HasValue ? $"₹{lot.SoldPrice.Value:N0}" : "-")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <div class="display-6 mb-2">📋</div>
+                    <p class="mb-0">No players added to this auction lot yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Right Column: Controls & Add Players -->
+    <div class="col-lg-4">
+        <!-- Control Actions -->
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="card p-4 mb-4">
+                <h2 class="h5 font-weight-bold mb-3">Auction Controls</h2>
+                <div class="d-grid gap-2">
+                    @if (Model.Status == AuctionStatus.Draft)
+                    {
+                        <form asp-action="Start" asp-route-id="@Model.Id" method="post">
+                            <button class="btn btn-success btn-lg w-100 font-weight-bold">🚀 Start Auction Event</button>
+                        </form>
+                    }
+                    @if (Model.Status == AuctionStatus.Live)
+                    {
+                        <form asp-action="Status" asp-route-id="@Model.Id" method="post">
+                            <input type="hidden" name="status" value="Paused" />
+                            <button class="btn btn-warning w-100 font-weight-bold">⏸️ Pause Bidding</button>
+                        </form>
+                    }
+                    @if (Model.Status == AuctionStatus.Paused)
+                    {
+                        <form asp-action="Status" asp-route-id="@Model.Id" method="post">
+                            <input type="hidden" name="status" value="Live" />
+                            <button class="btn btn-success w-100 font-weight-bold">▶️ Resume Bidding</button>
+                        </form>
+                    }
+                    @if (Model.Status == AuctionStatus.Live || Model.Status == AuctionStatus.Paused)
+                    {
+                        <form asp-action="Status" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Are you sure you want to mark this auction as completed?');">
+                            <input type="hidden" name="status" value="Completed" />
+                            <button class="btn btn-outline-danger w-100 mt-2">🏁 Complete Auction</button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <!-- Add Players Form (Only for Draft state) -->
+            @if (Model.Status == AuctionStatus.Draft)
+            {
+                <div class="card p-4">
+                    <h2 class="h5 font-weight-bold mb-3">Add Players to Lot Pool</h2>
+                    <form asp-action="AddPlayers" asp-route-id="@Model.Id" method="post">
+                        <div class="mb-3" style="max-height: 350px; overflow-y: auto;">
+                            @await Html.PartialAsync("_PlayerCheckboxes")
+                        </div>
+                        <button class="btn btn-primary w-100 font-weight-bold">➕ Add Selected Players</button>
+                    </form>
+                </div>
+            }
+        }
+    </div>
+</div>

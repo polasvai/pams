@@ -1,27 +1,54 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using POMS.Data.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav auth-nav">
+<ul class="navbar-nav align-items-lg-center auth-nav gap-2">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a class="nav-link auth-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button type="submit" class="nav-link btn btn-link auth-link">Logout</button>
-        </form>
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.DisplayName ?? User.Identity?.Name ?? "Operator";
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle auth-user-badge d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="user-avatar">@displayName[0].ToString().ToUpper()</span>
+            <span class="d-none d-sm-inline font-weight-bold">@displayName</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+            <li>
+                <div class="dropdown-header">
+                    <strong class="d-block text-dark">@displayName</strong>
+                    <small class="text-muted">@User.Identity?.Name</small>
+                </div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">
+                    📊 Dashboard
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" asp-controller="Auctions" asp-action="Create">
+                    ➕ Create Auction
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-item text-danger fw-semibold">
+                        🚪 Sign Out
+                    </button>
+                </form>
+            </li>
+        </ul>
     </li>
 }
 else
 {
     <li class="nav-item">
-        <a class="nav-link auth-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        <a class="btn btn-sm btn-outline-secondary px-3" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link auth-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        <a class="btn btn-sm btn-primary px-3" asp-area="Identity" asp-page="/Account/Register">Register</a>
     </li>
 }
 </ul>

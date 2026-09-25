@@ -1,5 +1,80 @@
 @model IEnumerable<Team>
-@{ ViewData["Title"] = "Teams"; }
-<div class="page-heading d-flex flex-wrap justify-content-between align-items-end gap-3"><div><span class="eyebrow">Squad room</span><h1 class="h3 mb-1">Teams</h1><p class="text-muted mb-0">Public team directory and auction purses.</p></div>@if (User.Identity?.IsAuthenticated == true) { <a class="btn btn-primary" asp-action="Create">Add team</a> } else { <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="/Teams">Sign in to manage</a> }</div>
-@if (TempData["Success"] is string success) { <div class="alert alert-success">@success</div> }
-<div class="row g-3">@foreach (var team in Model) { <div class="col-md-6 col-lg-4"><div class="card team-card p-4 h-100"><div class="d-flex justify-content-between align-items-start"><div class="d-flex gap-3 align-items-center"><div class="team-initial">@team.ShortCode[..1]</div><div><h2 class="h5 mb-1">@team.Name</h2><span class="text-muted small">@(team.AuctionPlayers.Count) acquired players</span></div></div><span class="team-code">@team.ShortCode</span></div><div class="purse"><span>Total purse</span><strong>₹@team.TotalBudget.ToString("N0")</strong></div><div class="d-flex gap-2 mt-3"><a class="btn btn-sm btn-primary flex-grow-1" asp-action="Details" asp-route-id="@team.Id">View squad</a>@if (User.Identity?.IsAuthenticated == true) { <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@team.Id">Edit</a> }</div></div></div> }</div>
+@{ ViewData["Title"] = "Team Directory"; }
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Franchises & Purses</span>
+        <h1 class="h2 font-weight-bold mb-0">Teams</h1>
+    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a class="btn btn-primary font-weight-bold" asp-action="Create">➕ Add Team</a>
+    }
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✓ @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    @foreach (var team in Model)
+    {
+        var acquiredCount = team.AuctionPlayers.Count(x => x.Status == AuctionPlayerStatus.Sold);
+        var spentAmount = team.AuctionPlayers.Where(x => x.Status == AuctionPlayerStatus.Sold).Sum(x => x.SoldPrice ?? 0);
+        var remainingPurse = team.TotalBudget - spentAmount;
+        
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 p-4 shadow-sm border-0 position-relative overflow-hidden">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        @if (!string.IsNullOrEmpty(team.LogoUrl))
+                        {
+                            <img src="@team.LogoUrl" alt="@team.Name" class="rounded" style="width: 48px; height: 48px; object-fit: contain;" />
+                        }
+                        else
+                        {
+                            <div class="user-avatar bg-primary text-white" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                                @team.ShortCode[..Math.Min(2, team.ShortCode.Length)]
+                            </div>
+                        }
+                        <div>
+                            <h2 class="h5 font-weight-bold mb-0 text-dark">@team.Name</h2>
+                            <span class="badge bg-light text-dark border">Code: @team.ShortCode</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-light p-3 rounded mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small text-muted">Total Purse:</span>
+                        <strong class="text-dark">₹@team.TotalBudget.ToString("N0")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small text-muted">Spent:</span>
+                        <strong class="text-danger">₹@spentAmount.ToString("N0")</strong>
+                    </div>
+                    <hr class="my-2" />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small font-weight-bold text-success">Remaining Purse:</span>
+                        <strong class="text-success fs-5">₹@remainingPurse.ToString("N0")</strong>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <span class="small text-muted">👥 @acquiredCount player(s) acquired</span>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@team.Id">Squad Roster</a>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@team.Id">Edit</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

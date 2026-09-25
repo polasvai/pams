@@ -1,8 +1,107 @@
 @model IEnumerable<Player>
-@{ ViewData["Title"] = "Players"; }
-<div class="page-heading d-flex flex-wrap justify-content-between align-items-end gap-3"><div><span class="eyebrow">Player pool</span><h1 class="h3 mb-1">Players</h1><p class="text-muted mb-0">Review the active cricket talent pool and base prices.</p></div><div class="d-flex gap-2">@if (User.Identity?.IsAuthenticated == true) { <a class="btn btn-primary" asp-action="Create">Add player</a> } else { <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="/Players">Sign in to manage</a> }</div></div>
-@if (TempData["Success"] is string success) { <div class="alert alert-success">@success</div> }
-<div class="players-toolbar"><form method="get"><input class="form-control" name="search" value="@ViewBag.Search" placeholder="Search by player name" /><button class="btn btn-primary">Search</button></form><span class="count-chip">@Model.Count() players</span></div>
-<div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Name</th><th>Role</th><th>Rating</th><th>Base price</th><th>Status</th><th></th></tr></thead><tbody>
-@foreach (var player in Model) { <tr><td class="fw-semibold">@player.FullName<br /><small class="text-muted">@player.Nationality</small></td><td>@player.Role</td><td class="rating-cell">@player.SkillRating</td><td class="price-cell">₹@player.BasePrice.ToString("N0")</td><td><span class="badge @(player.IsActive ? "bg-success" : "bg-secondary")">@(player.IsActive ? "Active" : "Archived")</span></td><td class="text-end">@if (User.Identity?.IsAuthenticated == true) { <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@player.Id">Edit</a> }</td></tr> }
-</tbody></table></div></div>
+@{ 
+    ViewData["Title"] = "Player Directory"; 
+    var search = ViewBag.Search as string;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Cricket Talent Pool</span>
+        <h1 class="h2 font-weight-bold mb-0">Players</h1>
+    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a class="btn btn-primary font-weight-bold" asp-action="Create">➕ Add Player</a>
+    }
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✓ @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-8">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">🔍</span>
+                <input class="form-control border-start-0" name="search" value="@search" placeholder="Search by player name or nationality..." />
+            </div>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+            @if (!string.IsNullOrWhiteSpace(search))
+            {
+                <a class="btn btn-outline-secondary" asp-action="Index">Clear</a>
+            }
+        </div>
+    </form>
+</div>
+
+<div class="card overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Role</th>
+                    <th>Skill Rating</th>
+                    <th>Base Price</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var player in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong class="d-block text-dark">@player.FullName</strong>
+                                <small class="text-muted">
+                                    @(string.IsNullOrEmpty(player.Nationality) ? "Domestic" : player.Nationality)
+                                    @if (!string.IsNullOrEmpty(player.BattingStyle)) { <span> · @player.BattingStyle</span> }
+                                </small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@player.Role</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2" style="max-width: 140px;">
+                                    <div class="progress flex-grow-1" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: @player.SkillRating%;"></div>
+                                    </div>
+                                    <small class="font-weight-bold">@player.SkillRating</small>
+                                </div>
+                            </td>
+                            <td class="font-weight-bold">₹@player.BasePrice.ToString("N0")</td>
+                            <td>
+                                <span class="badge @(player.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(player.IsActive ? "Active" : "Archived")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@player.Id">Edit</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            No players found matching your criteria.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

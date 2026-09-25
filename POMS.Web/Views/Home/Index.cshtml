@@ -1,7 +1,117 @@
 @{
-    ViewData["Title"] = "Cricket Auction Manager";
+    ViewData["Title"] = "Cricket Player Auction Manager";
 }
-<section class="landing-hero"><div class="hero-grid"></div><div class="hero-orb hero-orb-one"></div><div class="hero-orb hero-orb-two"></div><div class="container position-relative hero-content"><div class="row align-items-center g-5"><div class="col-lg-7"><div class="hero-badge"><span></span> Cricket auction operations, simplified</div><h1>Build your dream squad.<br /><em>Run every bid with confidence.</em></h1><p class="hero-lead">A professional command center for cricket player auctions—manage player pools, team purses, lot queues, and winning bids in one focused workspace.</p><div class="d-flex flex-wrap gap-3 mt-4"><a class="btn btn-light btn-lg" asp-controller="Auctions" asp-action="Index">Open auction center <span>→</span></a><a class="btn btn-outline-light btn-lg" asp-controller="Auctions" asp-action="Live">View live console</a></div><div class="hero-trust"><span>✓ Budget controls</span><span>✓ Audit-ready bids</span><span>✓ SQLite powered</span></div></div><div class="col-lg-5"><div class="hero-console-card"><div class="console-card-top"><span class="live-dot"></span> LIVE AUCTION CONTROL <span class="top-label">POMS / 01</span></div><div class="hero-player"><div class="player-avatar">AK</div><div><span>ON THE BLOCK</span><strong>Arjun Sharma</strong><small>All-rounder · Rating 88</small></div></div><div class="hero-bid"><div><small>HIGHEST BID</small><strong>₹ 2,450,000</strong><span>Mumbai Mavericks</span></div><div class="bid-pulse">LIVE<br /><small>00:24</small></div></div><div class="hero-lots"><span>LOT QUEUE</span><div><b>12</b> pending lots</div><div><b>06</b> sold today</div></div></div></div></div></div></section>
-<section class="container landing-stats"><div><strong>@ViewBag.PlayerCount</strong><span>Active players</span></div><div><strong>@ViewBag.TeamCount</strong><span>Registered teams</span></div><div><strong>@ViewBag.AuctionCount</strong><span>Auctions hosted</span></div><div><strong>₹@ViewBag.TotalBudgetText</strong><span>Total team budget</span></div></section>
-<section class="container landing-section"><div class="section-intro text-center mx-auto"><span class="eyebrow">One workspace. Every decision.</span><h2>Designed for the moments<br />that decide the match.</h2><p>From the first player list to the final hammer, keep your auction operation clear, fast, and under control.</p></div><div class="row g-4 mt-2"><div class="col-md-4"><div class="feature-card"><div class="feature-icon blue">01</div><h3>Curate the pool</h3><p>Keep every player’s role, rating, style, and base price ready for the next lot.</p><a asp-controller="Players" asp-action="Index">Manage players <span>↗</span></a></div></div><div class="col-md-4"><div class="feature-card"><div class="feature-icon purple">02</div><h3>Protect the purse</h3><p>Set team budgets and let auction rules guard every bid before it reaches the room.</p><a asp-controller="Teams" asp-action="Index">Manage teams <span>↗</span></a></div></div><div class="col-md-4"><div class="feature-card"><div class="feature-icon orange">03</div><h3>Run the room</h3><p>Bring players to the block, capture the highest bid, and publish sold or unsold.</p><a asp-controller="Auctions" asp-action="Live">Open live console <span>↗</span></a></div></div></div></section>
-<section class="container landing-section pb-5"><div class="workflow-panel"><div><span class="eyebrow light">A simple operating rhythm</span><h2>From setup to sold.</h2><p>Keep your auction team aligned with a clear, repeatable workflow.</p></div><div class="workflow-steps"><div><b>01</b><span>Configure</span><small>Rules & teams</small></div><div><b>02</b><span>Shortlist</span><small>Build your lots</small></div><div><b>03</b><span>Bid</span><small>Run the room</small></div><div><b>04</b><span>Announce</span><small>Sell the player</small></div></div></div></section>
+
+<!-- Hero Section -->
+<section class="landing-hero py-5">
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-one"></div>
+    <div class="hero-orb hero-orb-two"></div>
+
+    <div class="container position-relative hero-content py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <div class="hero-badge">
+                    <span></span> Cricket Auction Operations Center
+                </div>
+                <h1 class="display-3 font-weight-bold text-white mb-3">
+                    Build your dream squad.<br />
+                    <em>Master every bid.</em>
+                </h1>
+                <p class="hero-lead text-light opacity-90 mb-4">
+                    A professional command center for cricket player auctions — manage team purses, player lot pools, real-time bid logs, and winning sales with total accuracy.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a class="btn btn-warning btn-lg font-weight-bold px-4" asp-controller="Auctions" asp-action="Live">
+                        ⚡ Open Live Auction Room
+                    </a>
+                    <a class="btn btn-outline-light btn-lg px-4" asp-controller="Auctions" asp-action="Index">
+                        Browse Auctions
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="hero-console-card p-4 rounded-4 shadow-lg border border-light border-opacity-25 bg-dark text-white">
+                    <div class="console-card-top border-bottom border-secondary pb-3 mb-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="live-dot animate-pulse"></span>
+                            <span class="small font-weight-bold tracking-wider text-uppercase">Live Console Preview</span>
+                        </div>
+                        <span class="badge bg-warning text-dark">ACTIVE LOT</span>
+                    </div>
+                    
+                    <div class="py-3">
+                        <span class="text-muted small d-block">PLAYER ON THE BLOCK</span>
+                        <h3 class="h2 font-weight-bold text-white mb-1">Arjun Sharma</h3>
+                        <div class="d-flex gap-2 mb-4">
+                            <span class="badge bg-primary">All-Rounder</span>
+                            <span class="badge bg-secondary">Rating 88</span>
+                        </div>
+
+                        <div class="bg-secondary bg-opacity-25 p-3 rounded-3 mb-3 border border-secondary">
+                            <span class="small text-muted d-block">CURRENT HIGHEST BID</span>
+                            <div class="h2 font-weight-bold text-warning mb-0">₹ 24,50,000</div>
+                            <small class="text-light">Held by Mumbai Mavericks</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Bar -->
+<section class="container landing-stats my-4">
+    <div>
+        <strong>@ViewBag.PlayerCount</strong>
+        <span>Active Talent Pool</span>
+    </div>
+    <div>
+        <strong>@ViewBag.TeamCount</strong>
+        <span>Franchise Teams</span>
+    </div>
+    <div>
+        <strong>@ViewBag.AuctionCount</strong>
+        <span>Auctions Hosted</span>
+    </div>
+    <div>
+        <strong>₹@ViewBag.TotalBudgetText</strong>
+        <span>Combined Team Budget</span>
+    </div>
+</section>
+
+<!-- Features Grid -->
+<section class="container landing-section my-5">
+    <div class="section-intro text-center mx-auto mb-5" style="max-width: 600px;">
+        <span class="eyebrow">Professional Workflow</span>
+        <h2 class="h1 font-weight-bold">Everything you need to run a flawless auction.</h2>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card p-4 rounded-4 h-100">
+                <div class="feature-icon blue mb-3">01</div>
+                <h3 class="h5 font-weight-bold">Talent Pool Management</h3>
+                <p class="text-muted small">Curate players by role, batting style, bowling style, base price, and skill ratings.</p>
+                <a asp-controller="Players" asp-action="Index" class="fw-bold">Manage Players →</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card p-4 rounded-4 h-100">
+                <div class="feature-icon purple mb-3">02</div>
+                <h3 class="h5 font-weight-bold">Purse & Budget Guardrails</h3>
+                <p class="text-muted small">Set franchise budgets. Automatic validation prevents teams from bidding beyond available purses.</p>
+                <a asp-controller="Teams" asp-action="Index" class="fw-bold">Manage Teams →</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card p-4 rounded-4 h-100">
+                <div class="feature-icon orange mb-3">03</div>
+                <h3 class="h5 font-weight-bold">Real-time Bidding Console</h3>
+                <p class="text-muted small">Bring lot items to the block, accept real-time bids, and instantly publish sold/unsold outcomes.</p>
+                <a asp-controller="Auctions" asp-action="Live" class="fw-bold">Open Console →</a>
+            </div>
+        </div>
+    </div>
+</section>

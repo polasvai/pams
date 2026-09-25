@@ -8,7 +8,7 @@ using POMS.Data.Models;
 namespace POMS.Web.Areas.Identity.Pages.Account;
 
 [AllowAnonymous]
-public class LoginModel(SignInManager<ApplicationUser> signInManager) : PageModel
+public class LoginModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : PageModel
 {
     [BindProperty] public InputModel Input { get; set; } = new();
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
@@ -17,7 +17,17 @@ public class LoginModel(SignInManager<ApplicationUser> signInManager) : PageMode
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid) return Page();
-        var result = await signInManager.PasswordSignInAsync(Input.Email.Trim(), Input.Password, Input.RememberMe, lockoutOnFailure: false);
+
+        var user = await userManager.FindByEmailAsync(Input.Email.Trim()) 
+                   ?? await userManager.FindByNameAsync(Input.Email.Trim());
+
+        if (user is null)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid login attempt. Check your email and password.");
+            return Page();
+        }
+
+        var result = await signInManager.PasswordSignInAsync(user.UserName!, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
             return LocalRedirect(!string.IsNullOrWhiteSpace(ReturnUrl) && Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : "/Dashboard");
@@ -29,7 +39,7 @@ public class LoginModel(SignInManager<ApplicationUser> signInManager) : PageMode
 
     public sealed class InputModel
     {
-        [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+        [Required] public string Email { get; set; } = string.Empty;
         [Required, DataType(DataType.Password)] public string Password { get; set; } = string.Empty;
         public bool RememberMe { get; set; }
     }

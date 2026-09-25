@@ -1,4 +1,113 @@
 @model Team
-@{ ViewData["Title"] = Model.Name; }
-<div class="page-heading d-flex flex-wrap justify-content-between align-items-end gap-3"><div><span class="eyebrow">Team profile</span><h1 class="h3 mb-1">@Model.Name <span class="badge bg-primary">@Model.ShortCode</span></h1><p class="text-muted mb-0">Public squad and auction purse.</p></div><div class="d-flex gap-2"><a class="btn btn-outline-secondary" asp-action="Index">Back to teams</a>@if (User.Identity?.IsAuthenticated == true) { <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit team</a> }</div></div>
-<div class="row g-4"><div class="col-md-4"><div class="card p-4"><div class="text-muted">Total purse</div><div class="h3">₹@Model.TotalBudget.ToString("N0")</div></div></div><div class="col-md-8"><div class="card p-4"><h2 class="h5">Acquired players</h2>@if (Model.AuctionPlayers.Any()) { <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Player</th><th>Auction</th><th>Price</th></tr></thead><tbody>@foreach (var lot in Model.AuctionPlayers) { <tr><td>@(lot.Player?.FullName ?? "Unknown player")</td><td>@(lot.Auction?.Name ?? "Unknown auction")</td><td>₹@(lot.SoldPrice?.ToString("N0") ?? "-")</td></tr> }</tbody></table></div> } else { <p class="text-muted mb-0">No players acquired yet.</p> }</div></div></div>
+@{
+    ViewData["Title"] = Model.Name;
+    var acquired = Model.AuctionPlayers.Where(x => x.Status == AuctionPlayerStatus.Sold).ToList();
+    var spentAmount = acquired.Sum(x => x.SoldPrice ?? 0);
+    var remainingPurse = Model.TotalBudget - spentAmount;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Franchise Profile</span>
+        <h1 class="h2 font-weight-bold mb-0">
+            @Model.Name <span class="badge bg-primary">@Model.ShortCode</span>
+        </h1>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-action="Index">← Back to Teams</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit Team</a>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Team Stats Summary -->
+    <div class="col-md-4">
+        <div class="card p-4 mb-4">
+            <h2 class="h5 font-weight-bold mb-3">Purse Overview</h2>
+            <div class="mb-3">
+                <span class="text-muted small d-block">Total Purse Budget</span>
+                <div class="h3 font-weight-bold text-dark mb-0">₹@Model.TotalBudget.ToString("N0")</div>
+            </div>
+            <div class="mb-3">
+                <span class="text-muted small d-block">Total Spent</span>
+                <div class="h4 font-weight-bold text-danger mb-0">₹@spentAmount.ToString("N0")</div>
+            </div>
+            <hr />
+            <div>
+                <span class="text-muted small d-block">Remaining Purse</span>
+                <div class="h3 font-weight-bold text-success mb-0">₹@remainingPurse.ToString("N0")</div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <h2 class="h5 font-weight-bold mb-2">Squad Composition</h2>
+            <p class="text-muted small mb-3">Total Acquired: <strong>@acquired.Count player(s)</strong></p>
+            <ul class="list-group list-group-flush small">
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>Batters</span>
+                    <strong>@acquired.Count(x => x.Player.Role == PlayerRole.Batter)</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>Bowlers</span>
+                    <strong>@acquired.Count(x => x.Player.Role == PlayerRole.Bowler)</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>All-Rounders</span>
+                    <strong>@acquired.Count(x => x.Player.Role == PlayerRole.AllRounder)</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>Wicketkeepers</span>
+                    <strong>@acquired.Count(x => x.Player.Role == PlayerRole.Wicketkeeper)</strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Acquired Squad Roster -->
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h2 class="h5 font-weight-bold mb-3">Acquired Player Roster</h2>
+            @if (acquired.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Role</th>
+                                <th>Auction Event</th>
+                                <th class="text-end">Winning Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var lot in acquired)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong class="d-block text-dark">@(lot.Player?.FullName ?? "Unknown")</strong>
+                                        <small class="text-muted">Skill Rating: @lot.Player?.SkillRating/100</small>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">@lot.Player?.Role</span></td>
+                                    <td>@(lot.Auction?.Name ?? "Auction")</td>
+                                    <td class="text-end font-weight-bold text-success">
+                                        ₹@(lot.SoldPrice?.ToString("N0") ?? "-")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <div class="display-6 mb-2">🏏</div>
+                    <p class="mb-0">No players have been acquired by this team yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
