@@ -1,0 +1,70 @@
+@model POMS.Web.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Operator Sign In";
+}
+
+<div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <div class="auth-card p-4 p-md-5 rounded-4 shadow-lg border-0 bg-white" style="max-width: 460px; width: 100%;">
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 p-3 mb-3 shadow-sm">
+                <span class="fs-2">🏏</span>
+            </div>
+            <h1 class="h3 font-weight-bold text-dark mb-1">Cricket Auction Manager</h1>
+            <p class="text-muted small">Sign in to access live console & workspace</p>
+        </div>
+
+        <!-- 1-Click Instant Login as Super Admin -->
+        <div class="mb-4">
+            <a asp-action="QuickLogin" asp-route-role="superadmin" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-warning w-100 py-2 font-weight-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                <span>👑</span>
+                <span>⚡ Instant Sign In as Super Admin</span>
+            </a>
+            <div class="text-center mt-2">
+                <small class="text-muted">Or sign in with your credentials below</small>
+            </div>
+        </div>
+
+        <form asp-controller="Account" asp-action="Login" method="post" id="loginForm">
+            <input type="hidden" asp-for="ReturnUrl" />
+            
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3" role="alert"></div>
+
+            <div class="mb-3">
+                <label class="form-label font-weight-bold small text-dark" asp-for="UsernameOrEmail">Username or Email</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">👤</span>
+                    <input asp-for="UsernameOrEmail" id="usernameInput" class="form-control border-start-0" placeholder="superadmin or admin@poms.local" autocomplete="username" required autofocus />
+                </div>
+                <span asp-validation-for="UsernameOrEmail" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label font-weight-bold small text-dark" asp-for="Password">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">🔒</span>
+                    <input asp-for="Password" id="passwordInput" class="form-control border-start-0" placeholder="Enter password (default: Admin@123!)" autocomplete="current-password" required />
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check">
+                    <input asp-for="RememberMe" class="form-check-input" id="rememberMeCheck" />
+                    <label class="form-check-label small text-muted" for="rememberMeCheck">Keep me signed in</label>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 font-weight-bold py-2 shadow-sm" type="submit">
+                Sign In to Console ↗
+            </button>
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top">
+            <span class="small text-muted">Need an account?</span>
+            <a asp-controller="Account" asp-action="Register" class="small font-weight-bold text-primary ms-1">Create Account</a>
+            <div class="mt-2">
+                <a asp-controller="Home" asp-action="Index" class="small text-muted text-decoration-none">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>

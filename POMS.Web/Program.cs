@@ -28,6 +28,19 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.Cookie.Name = "POMS.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.SlidingExpiration = true;
+});
+
 builder.Services.AddScoped<POMS.Data.Services.AuctionService>();
 builder.Services.AddControllersWithViews();
 
@@ -42,6 +55,23 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// Redirect legacy /Identity/Account paths to /Account
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? string.Empty;
+    if (path.StartsWith("/Identity/Account/Login", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.Redirect("/Account/Login" + context.Request.QueryString);
+        return;
+    }
+    if (path.StartsWith("/Identity/Account/Register", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.Redirect("/Account/Register" + context.Request.QueryString);
+        return;
+    }
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

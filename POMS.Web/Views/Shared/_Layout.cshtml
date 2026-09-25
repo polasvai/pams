@@ -14,7 +14,7 @@
 </head>
 @{
     var currentPath = Context.Request.Path.Value ?? "/";
-    var isAuthPage = currentPath.StartsWith("/Identity/Account", StringComparison.OrdinalIgnoreCase);
+    var isAuthPage = currentPath.StartsWith("/Account", StringComparison.OrdinalIgnoreCase) || currentPath.StartsWith("/Identity/Account", StringComparison.OrdinalIgnoreCase);
     var isLandingPage = currentPath == "/";
 }
 <body class="@(isAuthPage ? "auth-page" : "app-body")">

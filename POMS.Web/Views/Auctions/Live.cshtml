@@ -204,7 +204,7 @@ else
                         <span class="fs-3">🔒</span>
                         <div>
                             <strong>Spectator Mode</strong>
-                            <p class="mb-0 small">You are viewing the live auction. <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path" class="fw-bold">Sign in as operator</a> to place bids.</p>
+                            <p class="mb-0 small">You are viewing the live auction. <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" class="fw-bold">Sign in as operator</a> to place bids.</p>
                         </div>
                     </div>
                 }
