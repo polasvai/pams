@@ -17,10 +17,15 @@
                 <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
 
                 <div class="row g-4">
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <label class="form-label font-weight-bold" asp-for="FullName">Player Full Name</label>
                         <input asp-for="FullName" class="form-control form-control-lg" required />
                         <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="MobileNumber">Mobile Number</label>
+                        <input asp-for="MobileNumber" class="form-control form-control-lg" />
                     </div>
 
                     <div class="col-md-4">
@@ -39,7 +44,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label font-weight-bold" asp-for="BasePrice">Base Price (₹)</label>
+                        <label class="form-label font-weight-bold" asp-for="BasePrice">Base Price (৳)</label>
                         <input asp-for="BasePrice" type="number" step="1000" min="0" class="form-control form-control-lg" required />
                     </div>
 

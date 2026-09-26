@@ -11,14 +11,22 @@ namespace POMS.Web.Areas.Identity.Pages.Account;
 public class RegisterModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : PageModel
 {
     [BindProperty] public InputModel Input { get; set; } = new();
-    public void OnGet() { }
+    public void OnGet()
+    {
+    }
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid) return Page();
+        if (!ModelState.IsValid)
+            return Page();
         var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email, EmailConfirmed = true };
         var result = await userManager.CreateAsync(user, Input.Password);
-        if (result.Succeeded) { await signInManager.SignInAsync(user, isPersistent: true); return LocalRedirect("/Dashboard"); }
-        foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
+        if (result.Succeeded)
+        {
+            await signInManager.SignInAsync(user, isPersistent: true);
+            return LocalRedirect("/Dashboard");
+        }
+        foreach (var error in result.Errors)
+            ModelState.AddModelError(string.Empty, error.Description);
         return Page();
     }
 

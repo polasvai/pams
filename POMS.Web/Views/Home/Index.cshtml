@@ -1,6 +1,81 @@
+@inject POMS.Web.Services.SettingsService SettingsSvc
 @{
     ViewData["Title"] = "Cricket Player Auction Manager";
+    var settings = SettingsSvc.GetSettings();
 }
+
+<!-- Home Page Slider -->
+<div id="homePageSlider" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        @if (settings.Slides.Any())
+        {
+            for (int i = 0; i < settings.Slides.Count; i++)
+            {
+                <button type="button" data-bs-target="#homePageSlider" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i+1)"></button>
+            }
+        }
+        else
+        {
+            <button type="button" data-bs-target="#homePageSlider" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#homePageSlider" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#homePageSlider" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        }
+    </div>
+    <div class="carousel-inner">
+        @if (settings.Slides.Any())
+        {
+            var isFirst = true;
+            foreach (var slide in settings.Slides)
+            {
+                <div class="carousel-item @(isFirst ? "active" : "")" style="height: 450px;">
+                    <div class="d-flex align-items-center justify-content-center h-100 text-white position-relative" style="background-image: url('@slide.ImageUrl'); background-size: cover; background-position: center;">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+                        <div class="text-center px-4 position-relative z-1">
+                            <h2 class="display-4 fw-bold text-white mb-3">@slide.Title</h2>
+                            <p class="lead text-light">@slide.Subtitle</p>
+                        </div>
+                    </div>
+                </div>
+                isFirst = false;
+            }
+        }
+        else
+        {
+            <div class="carousel-item active bg-dark" style="height: 450px;">
+                <div class="d-flex align-items-center justify-content-center h-100 text-white" style="background: linear-gradient(45deg, #1a1a1a, #4a4a4a);">
+                    <div class="text-center px-4">
+                        <h2 class="display-4 fw-bold text-white mb-3">Welcome to @settings.SiteName</h2>
+                        <p class="lead text-light opacity-75">The ultimate platform for cricket player auctions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item bg-primary" style="height: 450px;">
+                <div class="d-flex align-items-center justify-content-center h-100 text-white" style="background: linear-gradient(45deg, #0d6efd, #0dcaf0);">
+                    <div class="text-center px-4">
+                        <h2 class="display-4 fw-bold text-white mb-3">Real-Time Live Bidding</h2>
+                        <p class="lead text-light opacity-75">Experience the thrill of real-time franchise building.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item bg-success" style="height: 450px;">
+                <div class="d-flex align-items-center justify-content-center h-100 text-white" style="background: linear-gradient(45deg, #198754, #20c997);">
+                    <div class="text-center px-4">
+                        <h2 class="display-4 fw-bold text-white mb-3">Fair & Transparent</h2>
+                        <p class="lead text-light opacity-75">Manage purses securely and reliably across all franchise teams.</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#homePageSlider" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#homePageSlider" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
 
 <!-- Hero Section -->
 <section class="landing-hero py-5">
@@ -12,18 +87,20 @@
         <div class="row align-items-center g-5">
             <div class="col-lg-7">
                 <div class="hero-badge">
-                    <span></span> Cricket Auction Operations Center
+                    <span></span> @settings.SiteName Operations Center
                 </div>
                 <h1 class="display-3 font-weight-bold text-white mb-3">
-                    Build your dream squad.<br />
-                    <em>Master every bid.</em>
+                    @settings.HeroTitle
                 </h1>
                 <p class="hero-lead text-light opacity-90 mb-4">
-                    A professional command center for cricket player auctions — manage team purses, player lot pools, real-time bid logs, and winning sales with total accuracy.
+                    @settings.HeroSubtitle A professional command center for cricket player auctions — manage team purses, player lot pools, real-time bid logs, and winning sales with total accuracy.
                 </p>
                 <div class="d-flex flex-wrap gap-3 mt-4">
                     <a class="btn btn-warning btn-lg font-weight-bold px-4" asp-controller="Auctions" asp-action="Live">
                         ⚡ Open Live Auction Room
+                    </a>
+                    <a class="btn btn-primary btn-lg font-weight-bold px-4" asp-controller="Players" asp-action="Register">
+                        🏏 Register as a Player
                     </a>
                     <a class="btn btn-outline-light btn-lg px-4" asp-controller="Auctions" asp-action="Index">
                         Browse Auctions
@@ -51,7 +128,7 @@
 
                         <div class="bg-secondary bg-opacity-25 p-3 rounded-3 mb-3 border border-secondary">
                             <span class="small text-muted d-block">CURRENT HIGHEST BID</span>
-                            <div class="h2 font-weight-bold text-warning mb-0">₹ 24,50,000</div>
+                            <div class="h2 font-weight-bold text-warning mb-0">৳ 24,50,000</div>
                             <small class="text-light">Held by Mumbai Mavericks</small>
                         </div>
                     </div>
@@ -76,13 +153,46 @@
         <span>Auctions Hosted</span>
     </div>
     <div>
-        <strong>₹@ViewBag.TotalBudgetText</strong>
+        <strong>৳@ViewBag.TotalBudgetText</strong>
         <span>Combined Team Budget</span>
     </div>
 </section>
 
+<!-- How It Works Section -->
+<section class="bg-light py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="eyebrow text-primary">Simple Process</span>
+            <h2 class="h1 font-weight-bold">How @settings.SiteName Works</h2>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border">
+                    <div class="display-4 mb-3">📝</div>
+                    <h4 class="font-weight-bold">1. Player Registration</h4>
+                    <p class="text-muted small">Players register and specify their desired base price, role, and skills to enter the draft pool.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border">
+                    <div class="display-4 mb-3">🛡️</div>
+                    <h4 class="font-weight-bold">2. Team Budgets</h4>
+                    <p class="text-muted small">Franchises manage their allocated purses securely, ensuring they never bid past their limits.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 bg-white rounded-4 shadow-sm h-100 border">
+                    <div class="display-4 mb-3">⚡</div>
+                    <h4 class="font-weight-bold">3. Live Auction</h4>
+                    <p class="text-muted small">The auctioneer pulls players onto the block, takes real-time bids, and completes sales seamlessly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Features Grid -->
-<section class="container landing-section my-5">
+<section class="container landing-section my-5 py-5">
     <div class="section-intro text-center mx-auto mb-5" style="max-width: 600px;">
         <span class="eyebrow">Professional Workflow</span>
         <h2 class="h1 font-weight-bold">Everything you need to run a flawless auction.</h2>
@@ -90,27 +200,76 @@
 
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="feature-card p-4 rounded-4 h-100">
+            <div class="feature-card p-4 rounded-4 h-100 bg-white border shadow-sm">
                 <div class="feature-icon blue mb-3">01</div>
                 <h3 class="h5 font-weight-bold">Talent Pool Management</h3>
                 <p class="text-muted small">Curate players by role, batting style, bowling style, base price, and skill ratings.</p>
-                <a asp-controller="Players" asp-action="Index" class="fw-bold">Manage Players →</a>
+                <a asp-controller="Players" asp-action="Index" class="fw-bold text-decoration-none">Manage Players →</a>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="feature-card p-4 rounded-4 h-100">
+            <div class="feature-card p-4 rounded-4 h-100 bg-white border shadow-sm">
                 <div class="feature-icon purple mb-3">02</div>
                 <h3 class="h5 font-weight-bold">Purse & Budget Guardrails</h3>
                 <p class="text-muted small">Set franchise budgets. Automatic validation prevents teams from bidding beyond available purses.</p>
-                <a asp-controller="Teams" asp-action="Index" class="fw-bold">Manage Teams →</a>
+                <a asp-controller="Teams" asp-action="Index" class="fw-bold text-decoration-none">Manage Teams →</a>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="feature-card p-4 rounded-4 h-100">
+            <div class="feature-card p-4 rounded-4 h-100 bg-white border shadow-sm">
                 <div class="feature-icon orange mb-3">03</div>
                 <h3 class="h5 font-weight-bold">Real-time Bidding Console</h3>
                 <p class="text-muted small">Bring lot items to the block, accept real-time bids, and instantly publish sold/unsold outcomes.</p>
-                <a asp-controller="Auctions" asp-action="Live" class="fw-bold">Open Console →</a>
+                <a asp-controller="Auctions" asp-action="Live" class="fw-bold text-decoration-none">Open Console →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact and Location Section -->
+<section class="bg-dark text-white py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-lg-5">
+                <span class="eyebrow text-warning">Get in touch</span>
+                <h2 class="h1 font-weight-bold mb-4">Contact @settings.SiteName</h2>
+                <p class="text-light opacity-75 mb-4">Have questions about the upcoming drafts, team registrations, or sponsorships? Reach out to our management team directly.</p>
+                
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="fs-4">📧</div>
+                    <div>
+                        <small class="text-warning d-block font-weight-bold text-uppercase">Email Us</small>
+                        <a href="mailto:@settings.ContactEmail" class="text-white text-decoration-none fs-5">@settings.ContactEmail</a>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="fs-4">📞</div>
+                    <div>
+                        <small class="text-warning d-block font-weight-bold text-uppercase">Call Us</small>
+                        <a href="tel:@settings.ContactPhone" class="text-white text-decoration-none fs-5">@settings.ContactPhone</a>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="fs-4">📍</div>
+                    <div>
+                        <small class="text-warning d-block font-weight-bold text-uppercase">Headquarters</small>
+                        <span class="text-white fs-5">@settings.FooterAddress</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                @if (!string.IsNullOrEmpty(settings.MapEmbedUrl))
+                {
+                    <div class="rounded-4 overflow-hidden border border-secondary shadow-lg">
+                        <iframe src="@settings.MapEmbedUrl" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                }
+                else
+                {
+                    <div class="rounded-4 border border-secondary bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center" style="height: 400px;">
+                        <span class="text-muted">Map not configured</span>
+                    </div>
+                }
             </div>
         </div>
     </div>

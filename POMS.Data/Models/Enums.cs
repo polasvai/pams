@@ -4,8 +4,7 @@ public enum PlayerRole
 {
     Batter,
     Bowler,
-    AllRounder,
-    Wicketkeeper
+    AllRounder
 }
 
 public enum AuctionStatus

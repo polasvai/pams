@@ -29,16 +29,16 @@
             <h2 class="h5 font-weight-bold mb-3">Purse Overview</h2>
             <div class="mb-3">
                 <span class="text-muted small d-block">Total Purse Budget</span>
-                <div class="h3 font-weight-bold text-dark mb-0">₹@Model.TotalBudget.ToString("N0")</div>
+                <div class="h3 font-weight-bold text-dark mb-0">৳@Model.TotalBudget.ToString("N0")</div>
             </div>
             <div class="mb-3">
                 <span class="text-muted small d-block">Total Spent</span>
-                <div class="h4 font-weight-bold text-danger mb-0">₹@spentAmount.ToString("N0")</div>
+                <div class="h4 font-weight-bold text-danger mb-0">৳@spentAmount.ToString("N0")</div>
             </div>
             <hr />
             <div>
                 <span class="text-muted small d-block">Remaining Purse</span>
-                <div class="h3 font-weight-bold text-success mb-0">₹@remainingPurse.ToString("N0")</div>
+                <div class="h3 font-weight-bold text-success mb-0">৳@remainingPurse.ToString("N0")</div>
             </div>
         </div>
 
@@ -60,7 +60,7 @@
                 </li>
                 <li class="list-group-item d-flex justify-content-between px-0">
                     <span>Wicketkeepers</span>
-                    <strong>@acquired.Count(x => x.Player.Role == PlayerRole.Wicketkeeper)</strong>
+                    <strong>@acquired.Count(x => x.Player.Role == PlayerRole.Batter)</strong>
                 </li>
             </ul>
         </div>
@@ -93,7 +93,7 @@
                                     <td><span class="badge bg-light text-dark border">@lot.Player?.Role</span></td>
                                     <td>@(lot.Auction?.Name ?? "Auction")</td>
                                     <td class="text-end font-weight-bold text-success">
-                                        ₹@(lot.SoldPrice?.ToString("N0") ?? "-")
+                                        ৳@(lot.SoldPrice?.ToString("N0") ?? "-")
                                     </td>
                                 </tr>
                             }

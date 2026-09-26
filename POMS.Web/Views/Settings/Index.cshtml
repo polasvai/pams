@@ -1,0 +1,135 @@
+@model POMS.Web.Models.SiteSettings
+@{
+    ViewData["Title"] = "Project Settings";
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <span class="eyebrow">Administration</span>
+                <h1 class="h2 font-weight-bold mb-0">Project Settings</h1>
+            </div>
+        </div>
+
+        @if (TempData["Success"] is string success)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                ✓ @success
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
+            <form asp-action="Index" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <h3 class="h5 font-weight-bold border-bottom pb-2 mb-4">Site Branding & Content</h3>
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="SiteName">Site Name</label>
+                        <input asp-for="SiteName" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold">Upload New Logo</label>
+                        <div class="d-flex align-items-center gap-3">
+                            @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                            {
+                                <img src="@Model.LogoUrl" alt="Current Logo" class="rounded border" style="height: 40px; width: auto; object-fit: contain;" />
+                            }
+                            <input type="file" name="logoFile" class="form-control" accept="image/*" />
+                        </div>
+                        <input type="hidden" asp-for="LogoUrl" />
+                        <small class="text-muted">Leave empty to keep the current logo.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="HeroTitle">Landing Page Hero Title</label>
+                        <input asp-for="HeroTitle" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="HeroSubtitle">Landing Page Hero Subtitle</label>
+                        <input asp-for="HeroSubtitle" class="form-control" required />
+                    </div>
+                </div>
+
+                <h3 class="h5 font-weight-bold border-bottom pb-2 mb-4">Contact & Location</h3>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label font-weight-bold" asp-for="FooterAddress">Office Address (Footer & Contact Page)</label>
+                        <input asp-for="FooterAddress" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="ContactEmail">Contact Email</label>
+                        <input asp-for="ContactEmail" type="email" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="ContactPhone">Contact Phone</label>
+                        <input asp-for="ContactPhone" class="form-control" required />
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label font-weight-bold" asp-for="MapEmbedUrl">Google Maps Embed URL</label>
+                        <textarea asp-for="MapEmbedUrl" class="form-control" rows="3" placeholder="https://www.google.com/maps/embed?pb=..."></textarea>
+                        <small class="text-muted">Go to Google Maps -> Share -> Embed a map -> Copy the src attribute URL.</small>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-primary px-4 font-weight-bold" type="submit">Save Settings</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 mt-5">
+            <h3 class="h5 font-weight-bold border-bottom pb-2 mb-4">Homepage Slider Photos</h3>
+
+            <div class="row g-4 mb-4">
+                @if (Model.Slides.Any())
+                {
+                    foreach (var slide in Model.Slides)
+                    {
+                        <div class="col-md-4">
+                            <div class="card border shadow-sm h-100 overflow-hidden">
+                                <img src="@slide.ImageUrl" class="card-img-top object-fit-cover" alt="Slide" style="height: 120px;" />
+                                <div class="card-body p-3">
+                                    <h6 class="font-weight-bold mb-1">@slide.Title</h6>
+                                    <p class="small text-muted mb-3">@slide.Subtitle</p>
+                                    <form asp-action="DeleteSlide" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@slide.Id" />
+                                        <button class="btn btn-sm btn-outline-danger w-100" type="submit">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-muted">No slider photos added yet. Using default placeholders on the homepage.</div>
+                }
+            </div>
+
+            <h4 class="h6 font-weight-bold mb-3">Add New Slide</h4>
+            <form asp-action="AddSlide" method="post" enctype="multipart/form-data" class="bg-light p-4 rounded-3 border">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small font-weight-bold">Slide Image</label>
+                        <input type="file" name="slideImage" class="form-control" accept="image/*" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small font-weight-bold">Slide Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Welcome to the Auction" required />
+                    </div>
+                    <div class="col-md-9">
+                        <label class="form-label small font-weight-bold">Slide Subtitle</label>
+                        <input type="text" name="subtitle" class="form-control" placeholder="e.g. Get ready to bid on the best players." required />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-success w-100 font-weight-bold" type="submit">Add Slide</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

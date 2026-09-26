@@ -16,7 +16,10 @@ public class LoginViewModel
     [Display(Name = "Remember me on this device")]
     public bool RememberMe { get; set; } = true;
 
-    public string? ReturnUrl { get; set; }
+    public string? ReturnUrl
+    {
+        get; set;
+    }
 }
 
 public class RegisterViewModel
@@ -32,7 +35,10 @@ public class RegisterViewModel
     public string Email { get; set; } = string.Empty;
 
     [Display(Name = "Full Name")]
-    public string? DisplayName { get; set; }
+    public string? DisplayName
+    {
+        get; set;
+    }
 
     [Required(ErrorMessage = "Password is required.")]
     [DataType(DataType.Password)]
@@ -45,5 +51,8 @@ public class RegisterViewModel
     [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    public string? ReturnUrl { get; set; }
+    public string? ReturnUrl
+    {
+        get; set;
+    }
 }

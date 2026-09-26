@@ -42,6 +42,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddScoped<POMS.Data.Services.AuctionService>();
+builder.Services.AddSingleton<POMS.Web.Services.SettingsService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -123,13 +124,15 @@ using (var scope = app.Services.CreateScope())
             // Ensure password is set & verified
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
             await userManager.ResetPasswordAsync(user, token, password);
-            if (!await userManager.IsInRoleAsync(user, "Admin")) await userManager.AddToRoleAsync(user, "Admin");
-            if (!await userManager.IsInRoleAsync(user, "SuperAdmin")) await userManager.AddToRoleAsync(user, "SuperAdmin");
+            if (!await userManager.IsInRoleAsync(user, "Admin"))
+                await userManager.AddToRoleAsync(user, "Admin");
+            if (!await userManager.IsInRoleAsync(user, "SuperAdmin"))
+                await userManager.AddToRoleAsync(user, "SuperAdmin");
         }
     }
 
-    await SeedOrUpdateUserAsync("superadmin", "superadmin@poms.local", "Super Administrator", "Admin@123!");
-    await SeedOrUpdateUserAsync("admin", "admin@poms.local", "System Administrator", "Admin@123!");
+    await SeedOrUpdateUserAsync("superadmin", "superadmin@poms.local", "Super Administrator", "P@msSuperAdmin!2026Bcl");
+    await SeedOrUpdateUserAsync("admin", "admin@poms.local", "System Administrator", "P@msAdmin!2026Bcl");
 
     if (!await db.Teams.AnyAsync())
     {
@@ -144,7 +147,7 @@ using (var scope = app.Services.CreateScope())
             new Player { FullName = "Virat Kohli", Role = PlayerRole.Batter, Nationality = "India", BattingStyle = "Right-hand", SkillRating = 96, BasePrice = 20000000 },
             new Player { FullName = "Jasprit Bumrah", Role = PlayerRole.Bowler, Nationality = "India", BowlingStyle = "Right-arm fast", SkillRating = 97, BasePrice = 20000000 },
             new Player { FullName = "Hardik Pandya", Role = PlayerRole.AllRounder, Nationality = "India", BattingStyle = "Right-hand", BowlingStyle = "Right-arm medium-fast", SkillRating = 91, BasePrice = 15000000 },
-            new Player { FullName = "Heinrich Klaasen", Role = PlayerRole.Wicketkeeper, Nationality = "South Africa", BattingStyle = "Right-hand", SkillRating = 92, BasePrice = 12000000 },
+            new Player { FullName = "Heinrich Klaasen", Role = PlayerRole.Batter, Nationality = "South Africa", BattingStyle = "Right-hand", SkillRating = 92, BasePrice = 12000000 },
             new Player { FullName = "Pat Cummins", Role = PlayerRole.AllRounder, Nationality = "Australia", BattingStyle = "Right-hand", BowlingStyle = "Right-arm fast", SkillRating = 94, BasePrice = 18000000 },
             new Player { FullName = "Rashid Khan", Role = PlayerRole.Bowler, Nationality = "Afghanistan", BowlingStyle = "Right-arm legbreak", SkillRating = 95, BasePrice = 15000000 }
         );

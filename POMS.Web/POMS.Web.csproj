@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-POMS.Web-1e108764-6c1d-4c71-b419-bba3888d202b</UserSecretsId>
+    
+    <!-- Prevent Web Deploy and MSDeploy from deleting resources on publish -->
+    <ExcludeFoldersFromDeployment>App_Data;wwwroot\uploads</ExcludeFoldersFromDeployment>
+    <SkipExtraFilesOnServer>True</SkipExtraFilesOnServer>
   </PropertyGroup>
 
   <ItemGroup>

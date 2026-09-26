@@ -28,7 +28,7 @@
         <div class="col-md-8">
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0">🔍</span>
-                <input class="form-control border-start-0" name="search" value="@search" placeholder="Search by player name or nationality..." />
+                <input class="form-control border-start-0" name="search" value="@search" placeholder="Search by player name or mobile number..." />
             </div>
         </div>
         <div class="col-md-4 d-flex gap-2">
@@ -61,11 +61,26 @@
                     {
                         <tr>
                             <td>
-                                <strong class="d-block text-dark">@player.FullName</strong>
-                                <small class="text-muted">
-                                    @(string.IsNullOrEmpty(player.Nationality) ? "Domestic" : player.Nationality)
-                                    @if (!string.IsNullOrEmpty(player.BattingStyle)) { <span> · @player.BattingStyle</span> }
-                                </small>
+                                <div class="d-flex align-items-center gap-3">
+                                    @if (!string.IsNullOrEmpty(player.ProfilePictureUrl))
+                                    {
+                                        <img src="@player.ProfilePictureUrl" alt="Pic" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-muted" style="width: 40px; height: 40px;">
+                                            <small>👤</small>
+                                        </div>
+                                    }
+                                    <div>
+                                        <strong class="d-block text-dark">@player.FullName</strong>
+                                        <small class="text-muted">
+                                            @(string.IsNullOrEmpty(player.MobileNumber) ? "No Mobile" : player.MobileNumber)
+                                            @if (!string.IsNullOrEmpty(player.BattingStyle)) { <span> · @player.BattingStyle</span> }
+                                            @if (!string.IsNullOrEmpty(player.BowlingStyle)) { <span> · @player.BowlingStyle</span> }
+                                        </small>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 <span class="badge bg-light text-dark border">@player.Role</span>
@@ -78,7 +93,7 @@
                                     <small class="font-weight-bold">@player.SkillRating</small>
                                 </div>
                             </td>
-                            <td class="font-weight-bold">₹@player.BasePrice.ToString("N0")</td>
+                            <td class="font-weight-bold">৳@player.BasePrice.ToString("N0")</td>
                             <td>
                                 <span class="badge @(player.IsActive ? "bg-success" : "bg-secondary")">
                                     @(player.IsActive ? "Active" : "Archived")

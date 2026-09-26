@@ -62,8 +62,14 @@ public sealed class AuctionServiceTests
     private sealed class Fixture : IAsyncDisposable
     {
         private readonly SqliteConnection connection;
-        public ApplicationDbContext Db { get; }
-        public AuctionService Service { get; }
+        public ApplicationDbContext Db
+        {
+            get;
+        }
+        public AuctionService Service
+        {
+            get;
+        }
         public Auction Auction { get; } = new() { Name = "Test Auction", Status = AuctionStatus.Live, MinimumIncrement = 500 };
         public Player Player { get; } = new() { FullName = "Test Player", BasePrice = 100000, SkillRating = 80 };
         public Team TeamA { get; } = new() { Name = "Team A", ShortCode = "TA", TotalBudget = 1_000_000 };
@@ -83,7 +89,8 @@ public sealed class AuctionServiceTests
             await fixture.Db.Database.EnsureCreatedAsync();
             fixture.Db.AddRange(fixture.TeamA, new Team { Name = "Team B", ShortCode = "TB", TotalBudget = 1_000_000 }, fixture.Player, fixture.Auction);
             await fixture.Db.SaveChangesAsync();
-            fixture.Lot.AuctionId = fixture.Auction.Id; fixture.Lot.PlayerId = fixture.Player.Id;
+            fixture.Lot.AuctionId = fixture.Auction.Id;
+            fixture.Lot.PlayerId = fixture.Player.Id;
             fixture.Db.AuctionPlayers.Add(fixture.Lot);
             await fixture.Db.SaveChangesAsync();
             fixture.Auction.CurrentAuctionPlayerId = fixture.Lot.Id;

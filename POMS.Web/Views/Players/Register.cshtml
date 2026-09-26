@@ -1,0 +1,100 @@
+@model Player
+@{ ViewData["Title"] = "Player Registration"; }
+
+<div class="row justify-content-center py-5">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <span class="eyebrow text-primary">Join the Draft</span>
+                <h1 class="h2 font-weight-bold mb-0">Player Registration</h1>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" asp-controller="Home" asp-action="Index">← Back to Home</a>
+        </div>
+
+        <div class="card p-4 p-md-5 border-0 shadow-lg rounded-4">
+            <form asp-action="Register" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="FullName">Player Full Name</label>
+                        <input asp-for="FullName" class="form-control form-control-lg" placeholder="e.g. Shakib Al Hasan" required />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="MobileNumber">Mobile Number</label>
+                        <input asp-for="MobileNumber" class="form-control form-control-lg" placeholder="e.g. +8801XXXXXXXXX" required />
+                        <span asp-validation-for="MobileNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold">Profile Picture</label>
+                        <input type="file" name="profilePic" class="form-control form-control-lg" accept="image/*" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="Role">Primary Role</label>
+                        <select asp-for="Role" asp-items="Html.GetEnumSelectList<PlayerRole>()" class="form-select form-select-lg" id="roleSelect"></select>
+                    </div>
+
+                    <div class="col-md-6" id="battingStyleGroup" style="display: none;">
+                        <label class="form-label font-weight-bold" asp-for="BattingStyle">Batting Style</label>
+                        <select asp-for="BattingStyle" class="form-select form-select-lg">
+                            <option value="">-- Select --</option>
+                            <option value="Right Hand">Right Hand</option>
+                            <option value="Left Hand">Left Hand</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6" id="bowlingStyleGroup" style="display: none;">
+                        <label class="form-label font-weight-bold" asp-for="BowlingStyle">Bowling Style</label>
+                        <select asp-for="BowlingStyle" class="form-select form-select-lg">
+                            <option value="">-- Select --</option>
+                            <option value="Right Arm">Right Arm</option>
+                            <option value="Left Arm">Left Arm</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-primary btn-lg px-5 font-weight-bold w-100" type="submit">Submit Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var roleSelect = document.getElementById('roleSelect');
+            var battingStyleGroup = document.getElementById('battingStyleGroup');
+            var bowlingStyleGroup = document.getElementById('bowlingStyleGroup');
+
+            function updateVisibility() {
+                var val = roleSelect.options[roleSelect.selectedIndex].text;
+                // Batter or AllRounder -> Batting
+                if (val === 'Batter' || val === 'AllRounder') {
+                    battingStyleGroup.style.display = 'block';
+                } else {
+                    battingStyleGroup.style.display = 'none';
+                    document.getElementById('BattingStyle').value = '';
+                }
+
+                // Bowler or AllRounder -> Bowling
+                if (val === 'Bowler' || val === 'AllRounder') {
+                    bowlingStyleGroup.style.display = 'block';
+                } else {
+                    bowlingStyleGroup.style.display = 'none';
+                    document.getElementById('BowlingStyle').value = '';
+                }
+            }
+
+            roleSelect.addEventListener('change', updateVisibility);
+            updateVisibility();
+        });
+    </script>
+}

@@ -19,17 +19,28 @@ public class TeamsController(ApplicationDbContext db) : Controller
         return View(teams);
     }
     public IActionResult Create() => View(new Team());
-    [HttpPost] public async Task<IActionResult> Create(Team team, CancellationToken ct)
+    [HttpPost]
+    public async Task<IActionResult> Create(Team team, CancellationToken ct)
     {
-        if (!ModelState.IsValid) return View(team);
-        db.Teams.Add(team); await db.SaveChangesAsync(ct); TempData["Success"] = "Team created."; return RedirectToAction(nameof(Index));
+        if (!ModelState.IsValid)
+            return View(team);
+        db.Teams.Add(team);
+        await db.SaveChangesAsync(ct);
+        TempData["Success"] = "Team created.";
+        return RedirectToAction(nameof(Index));
     }
     public async Task<IActionResult> Edit(int id) => View(await db.Teams.FindAsync(id));
-    [HttpPost] public async Task<IActionResult> Edit(int id, Team team, CancellationToken ct)
+    [HttpPost]
+    public async Task<IActionResult> Edit(int id, Team team, CancellationToken ct)
     {
-        if (id != team.Id) return NotFound();
-        if (!ModelState.IsValid) return View(team);
-        db.Update(team); await db.SaveChangesAsync(ct); TempData["Success"] = "Team updated."; return RedirectToAction(nameof(Index));
+        if (id != team.Id)
+            return NotFound();
+        if (!ModelState.IsValid)
+            return View(team);
+        db.Update(team);
+        await db.SaveChangesAsync(ct);
+        TempData["Success"] = "Team updated.";
+        return RedirectToAction(nameof(Index));
     }
     [AllowAnonymous]
     public async Task<IActionResult> Details(int id)

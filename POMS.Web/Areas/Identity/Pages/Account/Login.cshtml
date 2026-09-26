@@ -15,23 +15,7 @@
             <p class="text-muted small">Sign in to access the auction console and workspace</p>
         </div>
 
-        <!-- Quick Demo Credentials Box -->
-        <div class="alert alert-light border border-primary-subtle rounded-3 p-3 mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="small font-weight-bold text-primary text-uppercase" style="letter-spacing: 0.5px;">⚡ Quick Login</span>
-                <span class="badge bg-primary text-white">One-Click</span>
-            </div>
-            <div class="d-grid gap-2">
-                <button type="button" class="btn btn-sm btn-outline-primary text-start d-flex justify-content-between align-items-center px-3 py-2" onclick="quickFill('superadmin', 'Admin@123!')">
-                    <span>👑 <strong>Super Admin</strong> (superadmin)</span>
-                    <span class="small text-muted">Fill →</span>
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary text-start d-flex justify-content-between align-items-center px-3 py-2" onclick="quickFill('admin', 'Admin@123!')">
-                    <span>🛡️ <strong>Admin</strong> (admin)</span>
-                    <span class="small text-muted">Fill →</span>
-                </button>
-            </div>
-        </div>
+
 
         <form method="post" class="auth-form" id="loginForm">
             @Html.AntiForgeryToken()
@@ -43,7 +27,7 @@
                 <label class="form-label font-weight-bold small text-dark" asp-for="Input.Email">Username or Email</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light border-end-0">👤</span>
-                    <input asp-for="Input.Email" id="usernameInput" class="form-control border-start-0" placeholder="e.g. superadmin or admin@poms.local" autocomplete="username" required autofocus />
+                    <input asp-for="Input.Email" id="usernameInput" class="form-control border-start-0"  autocomplete="username" required autofocus />
                 </div>
                 <span asp-validation-for="Input.Email" class="text-danger small"></span>
             </div>

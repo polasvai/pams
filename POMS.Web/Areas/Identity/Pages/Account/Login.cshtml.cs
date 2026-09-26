@@ -11,13 +11,18 @@ namespace POMS.Web.Areas.Identity.Pages.Account;
 public class LoginModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : PageModel
 {
     [BindProperty] public InputModel Input { get; set; } = new();
-    [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
+    [BindProperty(SupportsGet = true)]
+    public string? ReturnUrl
+    {
+        get; set;
+    }
 
     public void OnGet(string? returnUrl = null) => ReturnUrl = returnUrl;
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid) return Page();
+        if (!ModelState.IsValid)
+            return Page();
 
         var identifier = Input.Email?.Trim() ?? string.Empty;
 
@@ -33,14 +38,14 @@ public class LoginModel(UserManager<ApplicationUser> userManager, SignInManager<
         }
 
         // Search user by Username or Email
-        var user = await userManager.FindByNameAsync(identifier) 
+        var user = await userManager.FindByNameAsync(identifier)
                    ?? await userManager.FindByEmailAsync(identifier);
 
         // Fallback for admin terms if user typed something like "admin" or "superadmin"
         if (user is null && identifier.Contains("admin", StringComparison.OrdinalIgnoreCase))
         {
-            user = await userManager.FindByNameAsync("superadmin") 
-                   ?? await userManager.FindByNameAsync("admin") 
+            user = await userManager.FindByNameAsync("superadmin")
+                   ?? await userManager.FindByNameAsync("admin")
                    ?? await userManager.FindByEmailAsync("superadmin@poms.local")
                    ?? await userManager.FindByEmailAsync("admin@poms.local");
         }
@@ -66,8 +71,8 @@ public class LoginModel(UserManager<ApplicationUser> userManager, SignInManager<
             return LocalRedirect(!string.IsNullOrWhiteSpace(ReturnUrl) && Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : "/Dashboard");
         }
 
-        ModelState.AddModelError(string.Empty, result.IsLockedOut 
-            ? "This account is temporarily locked. Try again later." 
+        ModelState.AddModelError(string.Empty, result.IsLockedOut
+            ? "This account is temporarily locked. Try again later."
             : "Invalid login attempt. Use username 'superadmin' and password 'Admin@123!'.");
         return Page();
     }
@@ -81,6 +86,9 @@ public class LoginModel(UserManager<ApplicationUser> userManager, SignInManager<
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
-        public bool RememberMe { get; set; }
+        public bool RememberMe
+        {
+            get; set;
+        }
     }
 }

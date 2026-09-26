@@ -37,46 +37,20 @@ public class AccountController(
 
         var identifier = model.UsernameOrEmail.Trim();
 
-        // Normalize common admin aliases
-        if (string.Equals(identifier, "super admin", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(identifier, "superadmin", StringComparison.OrdinalIgnoreCase))
-        {
-            identifier = "superadmin";
-        }
-        else if (string.Equals(identifier, "admin", StringComparison.OrdinalIgnoreCase))
-        {
-            identifier = "admin";
-        }
-
         // Lookup user by Username OR Email
         var user = await userManager.FindByNameAsync(identifier)
                    ?? await userManager.FindByEmailAsync(identifier);
 
-        // Fallback for admin terms if user typed something containing "admin"
-        if (user is null && identifier.Contains("admin", StringComparison.OrdinalIgnoreCase))
-        {
-            user = await userManager.FindByNameAsync("superadmin")
-                   ?? await userManager.FindByNameAsync("admin")
-                   ?? await userManager.FindByEmailAsync("superadmin@poms.local")
-                   ?? await userManager.FindByEmailAsync("admin@poms.local");
-        }
-
         if (user is null)
         {
-            ModelState.AddModelError(string.Empty, "User account not found. Try username 'superadmin' with password 'Admin@123!'.");
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
 
         // Attempt password verification
         var passwordCheck = await signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: false);
-        
-        // Also allow convenient default passwords during setup/development
-        var isAcceptedPassword = passwordCheck.Succeeded || 
-                                 model.Password == "Admin@123!" || 
-                                 model.Password == "admin" || 
-                                 model.Password == "superadmin";
 
-        if (isAcceptedPassword)
+        if (passwordCheck.Succeeded)
         {
             await signInManager.SignInAsync(user, isPersistent: model.RememberMe);
             logger.LogInformation("User {UserName} successfully logged in.", user.UserName);
@@ -89,7 +63,7 @@ public class AccountController(
             return View(model);
         }
 
-        ModelState.AddModelError(string.Empty, "Invalid password. Default password is 'Admin@123!'.");
+        ModelState.AddModelError(string.Empty, "Invalid login attempt.");
         return View(model);
     }
 
@@ -116,7 +90,7 @@ public class AccountController(
             return View(model);
         }
 
-        var existingUser = await userManager.FindByNameAsync(model.Username) 
+        var existingUser = await userManager.FindByNameAsync(model.Username)
                            ?? await userManager.FindByEmailAsync(model.Email);
 
         if (existingUser is not null)
@@ -160,24 +134,7 @@ public class AccountController(
         return RedirectToAction("Index", "Home");
     }
 
-    // Direct Instant Access Route for Super Admin
-    [HttpGet]
-    public async Task<IActionResult> QuickLogin(string role = "superadmin", string? returnUrl = null)
-    {
-        var targetUsername = role.ToLowerInvariant() == "admin" ? "admin" : "superadmin";
-        var user = await userManager.FindByNameAsync(targetUsername) 
-                   ?? await userManager.FindByNameAsync("admin")
-                   ?? await userManager.FindByEmailAsync("admin@poms.local");
 
-        if (user is not null)
-        {
-            await signInManager.SignInAsync(user, isPersistent: true);
-            return RedirectToLocal(returnUrl);
-        }
-
-        TempData["Error"] = "Super Admin account could not be found. Please sign in manually.";
-        return RedirectToAction(nameof(Login));
-    }
 
     [HttpGet]
     public IActionResult AccessDenied()

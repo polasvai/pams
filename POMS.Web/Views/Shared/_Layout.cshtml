@@ -12,7 +12,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/matchday.css" asp-append-version="true" />
 </head>
+@inject POMS.Web.Services.SettingsService SettingsSvc
 @{
+    var settings = SettingsSvc.GetSettings();
     var currentPath = Context.Request.Path.Value ?? "/";
     var isAuthPage = currentPath.StartsWith("/Account", StringComparison.OrdinalIgnoreCase) || currentPath.StartsWith("/Identity/Account", StringComparison.OrdinalIgnoreCase);
     var isLandingPage = currentPath == "/";
@@ -31,8 +33,15 @@ else
     <header class="site-nav navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-lg-4">
             <a class="navbar-brand" asp-controller="Home" asp-action="Index">
-                <span class="brand-mark">CA</span>
-                <span>Cricket Auction <b>Manager</b></span>
+                @if (!string.IsNullOrEmpty(settings.LogoUrl))
+                {
+                    <img src="@settings.LogoUrl" alt="Logo" height="30" class="me-2" />
+                }
+                else
+                {
+                    <span class="brand-mark">CA</span>
+                }
+                <span><b>@settings.SiteName</b></span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,8 +59,13 @@ else
                         </li>
                     }
                     <li class="nav-item">
-                        <a class="nav-link @(currentPath.StartsWith("/Players", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Players" asp-action="Index">
+                        <a class="nav-link @(currentPath.StartsWith("/Players", StringComparison.OrdinalIgnoreCase) && !currentPath.Contains("/Register") ? "active" : "")" asp-controller="Players" asp-action="Index">
                             🏏 Players
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold text-primary @(currentPath.StartsWith("/Players/Register", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Players" asp-action="Register">
+                            📝 Player Registration
                         </a>
                     </li>
                     <li class="nav-item">
@@ -64,6 +78,14 @@ else
                             📋 Auctions
                         </a>
                     </li>
+                    @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPath.StartsWith("/Settings", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Settings" asp-action="Index">
+                                ⚙️ Settings
+                            </a>
+                        </li>
+                    }
                 </ul>
 
                 <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
@@ -89,13 +111,68 @@ else
         }
     </main>
 
-    <footer class="site-footer mt-auto py-4">
-        <div class="container-fluid px-lg-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-            <div>
-                <span class="fw-bold">Cricket Auction Manager</span> · <small class="text-muted-light">Powered by ASP.NET Core 8 & Entity Framework Core</small>
+    <footer class="site-footer mt-auto pt-5 pb-3 bg-white text-dark border-top shadow-sm">
+        <div class="container-fluid px-lg-5">
+            <div class="row g-4 mb-4">
+                <!-- Brand & About -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        @if (!string.IsNullOrEmpty(settings.LogoUrl))
+                        {
+                            <img src="@settings.LogoUrl" alt="Logo" height="40" class="me-2" />
+                        }
+                        else
+                        {
+                            <span class="brand-mark me-2">CA</span>
+                        }
+                        <h4 class="mb-0 fw-bold text-dark">@settings.SiteName</h4>
+                    </div>
+                    <p class="text-muted small pe-lg-4">
+                        A professional command center for managing cricket player auctions, team purses, and real-time live bidding seamlessly.
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="fw-bold mb-3 text-dark">Quick Links</h5>
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                        <li><a asp-controller="Home" asp-action="Index" class="text-muted text-decoration-none slide-hover">Home</a></li>
+                        <li><a asp-controller="Players" asp-action="Index" class="text-muted text-decoration-none slide-hover">Player Talent Pool</a></li>
+                        <li><a asp-controller="Teams" asp-action="Index" class="text-muted text-decoration-none slide-hover">Franchise Teams</a></li>
+                        <li><a asp-controller="Auctions" asp-action="Index" class="text-muted text-decoration-none slide-hover">Live Auctions</a></li>
+                        <li><a asp-controller="Players" asp-action="Register" class="text-primary text-decoration-none fw-bold slide-hover">📝 Register as Player</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="fw-bold mb-3 text-dark">Contact Us</h5>
+                    <ul class="list-unstyled text-muted small d-flex flex-column gap-3 mb-0">
+                        <li class="d-flex align-items-start gap-2">
+                            <span class="text-primary">📍</span>
+                            <span>@settings.FooterAddress</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <span class="text-primary">📧</span>
+                            <a href="mailto:@settings.ContactEmail" class="text-muted text-decoration-none">@settings.ContactEmail</a>
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <span class="text-primary">📞</span>
+                            <a href="tel:@settings.ContactPhone" class="text-muted text-decoration-none">@settings.ContactPhone</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="text-muted-light small">
-                © @DateTime.Now.Year POMS · All rights reserved.
+            
+            <hr class="border-secondary opacity-25 mb-3" />
+            
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 text-muted small">
+                <div>
+                    &copy; @DateTime.Now.Year <strong class="text-dark">@settings.SiteName</strong>. All rights reserved.
+                </div>
+                <div>
+                    Made with ❤️ <a href="https://srpolas.github.io/profile/" target="_blank" class="text-decoration-none fw-bold">S.R Polas</a>
+                </div>
             </div>
         </div>
     </footer>

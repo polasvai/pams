@@ -58,7 +58,7 @@
             <div class="stat-icon green">💰</div>
             <div>
                 <span class="text-muted small">Total Team Budget</span>
-                <div class="h4 font-weight-bold mb-0">₹@ViewBag.TotalBudgetText</div>
+                <div class="h4 font-weight-bold mb-0">৳@ViewBag.TotalBudgetText</div>
                 <small class="text-muted">Combined purses</small>
             </div>
         </div>
@@ -85,7 +85,7 @@
                             @if (active.Status == AuctionStatus.Live) { <i class="live-dot animate-pulse"></i> }
                             @active.Status
                         </span>
-                        <small class="text-muted">Min Increment: ₹@active.MinimumIncrement.ToString("N0")</small>
+                        <small class="text-muted">Min Increment: ৳@active.MinimumIncrement.ToString("N0")</small>
                     </div>
                     <h3 class="h4 font-weight-bold text-dark mb-2">@active.Name</h3>
                     <p class="text-muted mb-3">

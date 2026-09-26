@@ -35,7 +35,7 @@ else
                     @if (Model.Status == AuctionStatus.Live) { <i class="live-dot animate-pulse"></i> }
                     @Model.Status
                 </span>
-                <span class="text-muted small">Min Increment: ₹@Model.MinimumIncrement.ToString("N0")</span>
+                <span class="text-muted small">Min Increment: ৳@Model.MinimumIncrement.ToString("N0")</span>
             </div>
             <h1 class="h2 font-weight-bold mb-0">@Model.Name</h1>
         </div>
@@ -106,7 +106,7 @@ else
                         }
                     </div>
                     <p class="text-light mb-4">
-                        Base Price: <strong class="text-warning">₹@current.Player.BasePrice.ToString("N0")</strong>
+                        Base Price: <strong class="text-warning">৳@current.Player.BasePrice.ToString("N0")</strong>
                         @if (!string.IsNullOrEmpty(current.Player.BattingStyle)) { <span> · @current.Player.BattingStyle Bat</span> }
                         @if (!string.IsNullOrEmpty(current.Player.BowlingStyle)) { <span> · @current.Player.BowlingStyle</span> }
                     </p>
@@ -114,7 +114,7 @@ else
                     <div class="highest-bid-box">
                         <span class="text-uppercase small font-weight-bold text-light opacity-75">Highest Bid</span>
                         <div class="highest-bid-amount">
-                            ₹@(highest?.Amount.ToString("N0") ?? current.Player.BasePrice.ToString("N0"))
+                            ৳@(highest?.Amount.ToString("N0") ?? current.Player.BasePrice.ToString("N0"))
                         </div>
                         <small class="text-light font-weight-bold">
                             @(highest is not null ? $"Held by {highest.Team.Name}" : "Opening Lot Price")
@@ -132,7 +132,7 @@ else
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h3 class="h5 mb-0 font-weight-bold">💰 Place Bid</h3>
                             <span class="badge bg-light text-dark border">
-                                Minimum Next Bid: <strong>₹@minBidAmount.ToString("N0")</strong>
+                                Minimum Next Bid: <strong>৳@minBidAmount.ToString("N0")</strong>
                             </span>
                         </div>
 
@@ -140,16 +140,16 @@ else
                         <div class="d-flex flex-wrap gap-2 mb-3">
                             <span class="small align-self-center text-muted me-1">Quick Add:</span>
                             <button type="button" class="btn btn-sm btn-outline-secondary quick-bid-btn" onclick="setBidAmount(@minBidAmount)">
-                                Min Bid (₹@minBidAmount.ToString("N0"))
+                                Min Bid (৳@minBidAmount.ToString("N0"))
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-primary quick-bid-btn" onclick="addBidIncrement(50000)">
-                                + ₹50,000
+                                + ৳50,000
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-primary quick-bid-btn" onclick="addBidIncrement(100000)">
-                                + ₹100,000
+                                + ৳100,000
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-primary quick-bid-btn" onclick="addBidIncrement(500000)">
-                                + ₹500,000
+                                + ৳500,000
                             </button>
                         </div>
 
@@ -162,12 +162,12 @@ else
                                         <option value="">-- Select Team --</option>
                                         @foreach (var team in teams)
                                         {
-                                            <option value="@team.Id">@team.Name (Purse: ₹@team.TotalBudget.ToString("N0"))</option>
+                                            <option value="@team.Id">@team.Name (Purse: ৳@team.TotalBudget.ToString("N0"))</option>
                                         }
                                     </select>
                                 </div>
                                 <div class="col-lg-4">
-                                    <label class="form-label font-weight-bold">Bid Amount (₹)</label>
+                                    <label class="form-label font-weight-bold">Bid Amount (৳)</label>
                                     <input name="amount" id="bidAmountInput" type="number" step="1" min="@minBidAmount" value="@minBidAmount" class="form-control form-control-lg" required />
                                 </div>
                                 <div class="col-lg-2">
@@ -230,7 +230,7 @@ else
                                     @foreach (var lot in pending)
                                     {
                                         <option value="@lot.Id">
-                                            #@lot.LotNumber · @lot.Player.FullName (@lot.Player.Role) - ₹@lot.Player.BasePrice.ToString("N0")
+                                            #@lot.LotNumber · @lot.Player.FullName (@lot.Player.Role) - ৳@lot.Player.BasePrice.ToString("N0")
                                         </option>
                                     }
                                 </select>
@@ -247,7 +247,7 @@ else
                             {
                                 <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                                     <span>#@lot.LotNumber · <strong>@lot.Player.FullName</strong></span>
-                                    <span class="badge bg-light text-dark">₹@lot.Player.BasePrice.ToString("N0")</span>
+                                    <span class="badge bg-light text-dark">৳@lot.Player.BasePrice.ToString("N0")</span>
                                 </li>
                             }
                         </ul>
@@ -281,7 +281,7 @@ else
                                             @if (bid.IsWinning) { <span class="text-success me-1">🏆</span> }
                                             @bid.Team.Name
                                         </td>
-                                        <td class="text-end">₹@bid.Amount.ToString("N0")</td>
+                                        <td class="text-end">৳@bid.Amount.ToString("N0")</td>
                                         <td class="text-end text-muted small">@bid.PlacedAt.ToLocalTime().ToString("HH:mm:ss")</td>
                                     </tr>
                                 }
