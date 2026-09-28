@@ -60,11 +60,13 @@ public class Player
     public string PaymentMethod { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Payment Number is required")]
-    [StringLength(20)]
+    [StringLength(11, MinimumLength = 11, ErrorMessage = "Payment Number must be exactly 11 digits")]
+    [RegularExpression(@"^\d{11}$", ErrorMessage = "Payment Number must contain only numbers")]
     public string PaymentNumber { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Transaction ID is required")]
     [StringLength(100)]
+    [RegularExpression(@"^[a-zA-Z0-9]+$", ErrorMessage = "Transaction ID can only contain English characters and numbers")]
     public string TxnID { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Jersey Name is required")]

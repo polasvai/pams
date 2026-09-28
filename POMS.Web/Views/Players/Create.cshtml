@@ -129,13 +129,13 @@
 
                     <div class="col-md-4">
                         <label class="form-label font-weight-bold" asp-for="PaymentNumber">Payment Number</label>
-                        <input asp-for="PaymentNumber" class="form-control form-control-lg" placeholder="e.g. 017XXXXXXXX" required />
+                        <input asp-for="PaymentNumber" class="form-control form-control-lg" placeholder="e.g. 017XXXXXXXX" required minlength="11" maxlength="11" pattern="^\d{11}$" title="Must be exactly 11 digits" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                         <span asp-validation-for="PaymentNumber" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label font-weight-bold" asp-for="TxnID">Transaction ID (TxnID)</label>
-                        <input asp-for="TxnID" class="form-control form-control-lg" placeholder="Enter TxnID" required />
+                        <input asp-for="TxnID" class="form-control form-control-lg" placeholder="Enter TxnID" required pattern="^[a-zA-Z0-9]+$" title="Only English characters and numbers allowed" oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')" />
                         <span asp-validation-for="TxnID" class="text-danger small"></span>
                     </div>
                 </div>
