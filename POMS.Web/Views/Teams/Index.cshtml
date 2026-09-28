@@ -36,53 +36,58 @@
         var remainingPurse = team.TotalBudget - spentAmount;
         
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 p-4 shadow-sm border-0 position-relative overflow-hidden">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="d-flex align-items-center gap-3">
-                        @if (!string.IsNullOrEmpty(team.LogoUrl))
-                        {
-                            <img src="@team.LogoUrl" alt="@team.Name" class="rounded" style="width: 48px; height: 48px; object-fit: contain;" />
-                        }
-                        else
-                        {
-                            <div class="user-avatar bg-primary text-white" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                                @team.ShortCode[..Math.Min(2, team.ShortCode.Length)]
-                            </div>
-                        }
-                        <div>
-                            <h2 class="h5 font-weight-bold mb-0 text-dark">@team.Name</h2>
-                            <span class="badge bg-light text-dark border">Code: @team.ShortCode</span>
+            <div class="card h-100 shadow-sm border-0 position-relative overflow-hidden">
+                
+                <!-- Large Team Logo Header -->
+                @if (!string.IsNullOrEmpty(team.LogoUrl))
+                {
+                    <div class="bg-white d-flex align-items-center justify-content-center p-4 border-bottom" style="height: 200px;">
+                        <img src="@team.LogoUrl" alt="@team.Name" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                    </div>
+                }
+                else
+                {
+                    <div class="bg-primary d-flex align-items-center justify-content-center p-4 border-bottom" style="height: 200px;">
+                        <div class="text-white font-weight-bold" style="font-size: 4rem; opacity: 0.8;">
+                            @team.ShortCode[..Math.Min(3, team.ShortCode.Length)]
                         </div>
                     </div>
-                </div>
+                }
 
-                <div class="bg-light p-3 rounded mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small text-muted">Total Purse:</span>
-                        <strong class="text-dark">৳@team.TotalBudget.ToString("N0")</strong>
+                <div class="p-4 d-flex flex-column flex-grow-1">
+                    <div class="mb-3 text-center">
+                        <h2 class="h4 font-weight-bold mb-1 text-dark">@team.Name</h2>
+                        <span class="badge bg-light text-dark border px-3 py-2">Code: @team.ShortCode</span>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small text-muted">Spent:</span>
-                        <strong class="text-danger">৳@spentAmount.ToString("N0")</strong>
-                    </div>
-                    <hr class="my-2" />
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="small font-weight-bold text-success">Remaining Purse:</span>
-                        <strong class="text-success fs-5">৳@remainingPurse.ToString("N0")</strong>
-                    </div>
-                </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-auto">
-                    <span class="small text-muted">👥 @acquiredCount player(s) acquired</span>
-                    <div class="d-flex gap-1 flex-wrap">
-                        <a class="btn btn-sm btn-outline-primary px-2" asp-action="Details" asp-route-id="@team.Id" title="Squad">📋</a>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <a class="btn btn-sm btn-outline-secondary px-2" asp-action="Edit" asp-route-id="@team.Id" title="Edit">✏️</a>
-                            <form asp-action="Delete" asp-route-id="@team.Id" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this team?');">
-                                <button type="submit" class="btn btn-sm btn-danger px-2" title="Delete">🗑️</button>
-                            </form>
-                        }
+                    <div class="bg-light p-3 rounded mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small text-muted">Total Purse:</span>
+                            <strong class="text-dark">৳@team.TotalBudget.ToString("N0")</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small text-muted">Spent:</span>
+                            <strong class="text-danger">৳@spentAmount.ToString("N0")</strong>
+                        </div>
+                        <hr class="my-2" />
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small font-weight-bold text-success">Remaining Purse:</span>
+                            <strong class="text-success fs-5">৳@remainingPurse.ToString("N0")</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <span class="small font-weight-bold text-muted">👥 @acquiredCount player(s)</span>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a class="btn btn-sm btn-outline-primary px-3" asp-action="Details" asp-route-id="@team.Id" title="View Squad">Squad</a>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <a class="btn btn-sm btn-outline-secondary px-2" asp-action="Edit" asp-route-id="@team.Id" title="Edit">✏️</a>
+                                <form asp-action="Delete" asp-route-id="@team.Id" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this team?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger px-2" title="Delete">🗑️</button>
+                                </form>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
