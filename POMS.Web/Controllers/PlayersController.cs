@@ -19,6 +19,14 @@ public class PlayersController(ApplicationDbContext db) : Controller
     [HttpPost]
     public async Task<IActionResult> Create(Player player, IFormFile? profilePic, [FromServices] IWebHostEnvironment env, CancellationToken ct)
     {
+        if (!string.IsNullOrEmpty(player.MobileNumber))
+        {
+            if (await db.Players.AnyAsync(p => p.MobileNumber == player.MobileNumber, ct))
+            {
+                ModelState.AddModelError(nameof(Player.MobileNumber), "This mobile number is already registered.");
+            }
+        }
+
         if (!ModelState.IsValid)
             return View(player);
             
@@ -50,6 +58,14 @@ public class PlayersController(ApplicationDbContext db) : Controller
     {
         ModelState.Remove(nameof(Player.SkillRating));
         ModelState.Remove(nameof(Player.BasePrice));
+
+        if (!string.IsNullOrEmpty(player.MobileNumber))
+        {
+            if (await db.Players.AnyAsync(p => p.MobileNumber == player.MobileNumber, ct))
+            {
+                ModelState.AddModelError(nameof(Player.MobileNumber), "This mobile number is already registered.");
+            }
+        }
 
         if (!ModelState.IsValid)
             return View(player);
@@ -116,6 +132,14 @@ public class PlayersController(ApplicationDbContext db) : Controller
         if (id != player.Id)
             return NotFound();
             
+        if (!string.IsNullOrEmpty(player.MobileNumber))
+        {
+            if (await db.Players.AnyAsync(p => p.MobileNumber == player.MobileNumber && p.Id != player.Id, ct))
+            {
+                ModelState.AddModelError(nameof(Player.MobileNumber), "This mobile number is already registered to another player.");
+            }
+        }
+
         if (!ModelState.IsValid)
             return View(player);
             
