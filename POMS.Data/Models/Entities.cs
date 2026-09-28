@@ -200,3 +200,27 @@ public class Bid
         get; set;
     }
 }
+
+public enum MatchStatus { Scheduled, Ongoing, Completed, Abandoned }
+
+public class Match
+{
+    public int Id { get; set; }
+    
+    public int Team1Id { get; set; }
+    public Team Team1 { get; set; } = null!;
+
+    public int Team2Id { get; set; }
+    public Team Team2 { get; set; } = null!;
+
+    [Required]
+    public DateTime MatchDate { get; set; }
+
+    [StringLength(200)]
+    public string? Venue { get; set; }
+
+    public MatchStatus Status { get; set; } = MatchStatus.Scheduled;
+
+    [StringLength(200)]
+    public string? Result { get; set; }
+}

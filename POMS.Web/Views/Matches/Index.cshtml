@@ -1,0 +1,90 @@
+@model IEnumerable<POMS.Data.Models.Match>
+@{ ViewData["Title"] = "Match Schedule"; }
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Tournament Fixtures</span>
+        <h1 class="h2 font-weight-bold mb-0">Match Schedule</h1>
+    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a class="btn btn-primary font-weight-bold" asp-action="Create">➕ Schedule Match</a>
+    }
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✓ @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center py-5">
+            <h3 class="text-muted">No matches scheduled yet.</h3>
+        </div>
+    }
+    else
+    {
+        @foreach (var match in Model)
+        {
+            var isPast = match.MatchDate < DateTime.Now && match.Status == MatchStatus.Scheduled;
+            <div class="col-md-6 col-lg-6">
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center p-3">
+                        <span class="badge @(match.Status == MatchStatus.Scheduled ? "bg-primary" : match.Status == MatchStatus.Ongoing ? "bg-warning text-dark animate-pulse" : match.Status == MatchStatus.Completed ? "bg-success" : "bg-danger")">
+                            @match.Status.ToString()
+                        </span>
+                        <div class="text-end">
+                            <small class="d-block">@match.MatchDate.ToString("MMM dd, yyyy")</small>
+                            <small class="d-block fw-bold text-warning">@match.MatchDate.ToString("hh:mm tt")</small>
+                        </div>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-center w-40">
+                                @if(!string.IsNullOrEmpty(match.Team1?.LogoUrl)) {
+                                    <img src="@match.Team1.LogoUrl" alt="T1" style="height:64px; object-fit:contain;" class="mb-2"/>
+                                } else {
+                                    <div class="display-4 mb-2">🛡️</div>
+                                }
+                                <h5 class="font-weight-bold mb-0">@match.Team1?.Name</h5>
+                            </div>
+                            <div class="w-20">
+                                <span class="text-muted fw-bold fst-italic">VS</span>
+                            </div>
+                            <div class="text-center w-40">
+                                @if(!string.IsNullOrEmpty(match.Team2?.LogoUrl)) {
+                                    <img src="@match.Team2.LogoUrl" alt="T2" style="height:64px; object-fit:contain;" class="mb-2"/>
+                                } else {
+                                    <div class="display-4 mb-2">🛡️</div>
+                                }
+                                <h5 class="font-weight-bold mb-0">@match.Team2?.Name</h5>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(match.Venue))
+                        {
+                            <div class="text-muted small mb-3">📍 @match.Venue</div>
+                        }
+                        @if (!string.IsNullOrEmpty(match.Result))
+                        {
+                            <div class="alert alert-info py-2 mb-0 fw-bold">🏆 @match.Result</div>
+                        }
+                    </div>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="card-footer bg-light p-3 d-flex justify-content-end gap-2">
+                            <a class="btn btn-sm btn-outline-secondary px-3" asp-action="Edit" asp-route-id="@match.Id">✏️ Edit</a>
+                            <form asp-action="Delete" asp-route-id="@match.Id" method="post" onsubmit="return confirm('Delete this match?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger px-3">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

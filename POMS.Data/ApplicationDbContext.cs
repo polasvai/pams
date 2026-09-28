@@ -12,6 +12,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Auction> Auctions => Set<Auction>();
     public DbSet<AuctionPlayer> AuctionPlayers => Set<AuctionPlayer>();
     public DbSet<Bid> Bids => Set<Bid>();
+    public DbSet<Match> Matches => Set<Match>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -26,5 +27,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Bid>().HasOne(x => x.Team).WithMany(x => x.Bids).HasForeignKey(x => x.TeamId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Auction>().HasOne(x => x.CurrentAuctionPlayer).WithMany().HasForeignKey(x => x.CurrentAuctionPlayerId).OnDelete(DeleteBehavior.SetNull);
         builder.Entity<AuctionPlayer>().HasIndex(x => new { x.AuctionId, x.PlayerId }).IsUnique();
+        
+        builder.Entity<Match>().HasOne(x => x.Team1).WithMany().HasForeignKey(x => x.Team1Id).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<Match>().HasOne(x => x.Team2).WithMany().HasForeignKey(x => x.Team2Id).OnDelete(DeleteBehavior.Restrict);
     }
 }

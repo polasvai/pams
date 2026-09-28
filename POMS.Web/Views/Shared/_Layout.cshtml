@@ -86,6 +86,11 @@ else
                             📋 Auctions
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentPath.StartsWith("/Matches", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Matches" asp-action="Index">
+                            📅 Schedule
+                        </a>
+                    </li>
                     @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                     {
                         <li class="nav-item">
@@ -148,6 +153,7 @@ else
                         <li><a asp-controller="Players" asp-action="Index" class="text-muted text-decoration-none slide-hover">Player Talent Pool</a></li>
                         <li><a asp-controller="Teams" asp-action="Index" class="text-muted text-decoration-none slide-hover">Franchise Teams</a></li>
                         <li><a asp-controller="Auctions" asp-action="Index" class="text-muted text-decoration-none slide-hover">Live Auctions</a></li>
+                        <li><a asp-controller="Matches" asp-action="Index" class="text-muted text-decoration-none slide-hover">Match Schedule</a></li>
                         <li><a asp-controller="Players" asp-action="Register" class="text-primary text-decoration-none fw-bold slide-hover">📝 Register as Player</a></li>
                     </ul>
                 </div>
