@@ -12,7 +12,7 @@
         </div>
 
         <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
                 <input asp-for="Id" type="hidden" />
                 <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
 
@@ -29,12 +29,19 @@
 
                     <div class="col-12">
                         <label class="form-label font-weight-bold" asp-for="TotalBudget">Total Purse Budget (৳)</label>
-                        <input asp-for="TotalBudget" type="number" step="100000" min="0" class="form-control form-control-lg" required />
+                        <input asp-for="TotalBudget" type="number" step="any" class="form-control form-control-lg" required />
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label font-weight-bold" asp-for="LogoUrl">Logo URL</label>
-                        <input asp-for="LogoUrl" class="form-control" />
+                        <label class="form-label font-weight-bold">Update Logo</label>
+                        @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                        {
+                            <div class="mb-2">
+                                <img src="@Model.LogoUrl" alt="Current Logo" class="rounded" style="height: 50px;" />
+                            </div>
+                        }
+                        <input type="file" name="logoFile" class="form-control form-control-lg" accept="image/*" />
+                        <small class="text-muted">Leave blank to keep existing logo.</small>
                     </div>
                 </div>
 

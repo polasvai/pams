@@ -52,6 +52,33 @@ public class Player
     [StringLength(20)]
     public string? MobileNumber { get; set; }
     
+    [StringLength(20)]
+    public string? Category { get; set; }
+    
+    [Required(ErrorMessage = "Payment Method is required")]
+    [StringLength(20)]
+    public string PaymentMethod { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Payment Number is required")]
+    [StringLength(20)]
+    public string PaymentNumber { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Transaction ID is required")]
+    [StringLength(100)]
+    public string TxnID { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Jersey Name is required")]
+    [StringLength(50)]
+    public string JerseyName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Jersey Size is required")]
+    [StringLength(10)]
+    public string JerseySize { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Jersey Number is required")]
+    [StringLength(10)]
+    public string JerseyNumber { get; set; } = string.Empty;
+
     [StringLength(300)]
     public string? ProfilePictureUrl { get; set; }
 
@@ -71,7 +98,6 @@ public class Team
     {
         get; set;
     }
-    [Range(0, double.MaxValue)]
     public decimal TotalBudget
     {
         get; set;

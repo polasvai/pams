@@ -1,5 +1,9 @@
 @model Player
-@{ ViewData["Title"] = "Player Registration"; }
+@inject POMS.Web.Services.SettingsService SettingsService
+@{ 
+    ViewData["Title"] = "Player Registration"; 
+    var settings = SettingsService.GetSettings();
+}
 
 <div class="row justify-content-center py-5">
     <div class="col-lg-8">
@@ -10,6 +14,13 @@
             </div>
             <a class="btn btn-outline-secondary btn-sm" asp-controller="Home" asp-action="Index">← Back to Home</a>
         </div>
+
+        @if (!string.IsNullOrWhiteSpace(settings.RegistrationMessage))
+        {
+            <div class="alert alert-info border shadow-sm mb-4">
+                <strong>📢 Instructions:</strong> @settings.RegistrationMessage
+            </div>
+        }
 
         <div class="card p-4 p-md-5 border-0 shadow-lg rounded-4">
             <form asp-action="Register" method="post" enctype="multipart/form-data">
@@ -24,13 +35,14 @@
 
                     <div class="col-md-6">
                         <label class="form-label font-weight-bold" asp-for="MobileNumber">Mobile Number</label>
-                        <input asp-for="MobileNumber" class="form-control form-control-lg" placeholder="e.g. +8801XXXXXXXXX" required />
+                        <input asp-for="MobileNumber" class="form-control form-control-lg" placeholder="e.g. 017XXXXXXXX" required pattern="^(\+8801|01)[3-9]\d{8}$" title="Valid Bangladesh mobile number starting with 01 or +8801" />
                         <span asp-validation-for="MobileNumber" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label font-weight-bold">Profile Picture</label>
-                        <input type="file" name="profilePic" class="form-control form-control-lg" accept="image/*" />
+                        <input type="file" name="profilePic" class="form-control form-control-lg" accept="image/*" required />
+                        <small class="text-muted">A clear, front-facing headshot is required.</small>
                     </div>
 
                     <div class="col-md-6">
@@ -55,6 +67,62 @@
                             <option value="Left Arm">Left Arm</option>
                         </select>
                     </div>
+                    <div class="col-12 mt-5">
+                        <h4 class="h5 font-weight-bold border-bottom pb-2 mb-3">Jersey Details</h4>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="JerseyName">Jersey Name</label>
+                        <input asp-for="JerseyName" class="form-control form-control-lg" placeholder="Name on back" required />
+                        <span asp-validation-for="JerseyName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="JerseySize">Jersey Size</label>
+                        <select asp-for="JerseySize" class="form-select form-select-lg" required>
+                            <option value="">-- Select Size --</option>
+                            <option value="S">Small (S)</option>
+                            <option value="M">Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                            <option value="XXL">XXL</option>
+                            <option value="XXL">XXXL</option>
+                        </select>
+                        <span asp-validation-for="JerseySize" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="JerseyNumber">Jersey Number</label>
+                        <input asp-for="JerseyNumber" class="form-control form-control-lg" placeholder="আপনার পছন্দের জার্সি নাম্বার লিখুন" required />
+                        <span asp-validation-for="JerseyNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 mt-5">
+                        <h4 class="h5 font-weight-bold border-bottom pb-2 mb-3">Payment Details</h4>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="PaymentMethod">Payment Method</label>
+                        <select asp-for="PaymentMethod" class="form-select form-select-lg" required>
+                            <option value="">-- Select --</option>
+                            <option value="bKash">bKash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                        </select>
+                        <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="PaymentNumber">Payment Number</label>
+                        <input asp-for="PaymentNumber" class="form-control form-control-lg" placeholder="কোন নাম্বারে সেন্ডমানি করেছেন সেটি লিখুন" required />
+                        <span asp-validation-for="PaymentNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="TxnID">Transaction ID (TxnID)</label>
+                        <input asp-for="TxnID" class="form-control form-control-lg" placeholder="Enter TxnID" required />
+                        <span asp-validation-for="TxnID" class="text-danger small"></span>
+                    </div>
                 </div>
 
                 <hr class="my-4" />
@@ -76,20 +144,27 @@
 
             function updateVisibility() {
                 var val = roleSelect.options[roleSelect.selectedIndex].text;
+                var batInput = document.getElementById('BattingStyle');
+                var bowlInput = document.getElementById('BowlingStyle');
+                
                 // Batter or AllRounder -> Batting
                 if (val === 'Batter' || val === 'AllRounder') {
                     battingStyleGroup.style.display = 'block';
+                    batInput.setAttribute('required', 'required');
                 } else {
                     battingStyleGroup.style.display = 'none';
-                    document.getElementById('BattingStyle').value = '';
+                    batInput.removeAttribute('required');
+                    batInput.value = '';
                 }
 
                 // Bowler or AllRounder -> Bowling
                 if (val === 'Bowler' || val === 'AllRounder') {
                     bowlingStyleGroup.style.display = 'block';
+                    bowlInput.setAttribute('required', 'required');
                 } else {
                     bowlingStyleGroup.style.display = 'none';
-                    document.getElementById('BowlingStyle').value = '';
+                    bowlInput.removeAttribute('required');
+                    bowlInput.value = '';
                 }
             }
 

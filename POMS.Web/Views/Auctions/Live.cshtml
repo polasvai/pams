@@ -96,6 +96,12 @@ else
                 }
                 else
                 {
+                    @if (!string.IsNullOrEmpty(current.Player.ProfilePictureUrl))
+                    {
+                        <div class="mb-3 mt-3">
+                            <img src="@current.Player.ProfilePictureUrl" alt="Player Photo" class="rounded-circle border border-3 shadow-sm" style="width: 130px; height: 130px; object-fit: cover; border-color: rgba(255,255,255,0.2) !important;" />
+                        </div>
+                    }
                     <h2 class="stage-player">@current.Player.FullName</h2>
                     <div class="d-flex justify-content-center flex-wrap gap-2 mb-3">
                         <span class="badge bg-primary px-3 py-2">@current.Player.Role</span>
@@ -136,23 +142,6 @@ else
                             </span>
                         </div>
 
-                        <!-- Quick Increment Buttons -->
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="small align-self-center text-muted me-1">Quick Add:</span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary quick-bid-btn" onclick="setBidAmount(@minBidAmount)">
-                                Min Bid (৳@minBidAmount.ToString("N0"))
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary quick-bid-btn" onclick="addBidIncrement(50000)">
-                                + ৳50,000
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary quick-bid-btn" onclick="addBidIncrement(100000)">
-                                + ৳100,000
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary quick-bid-btn" onclick="addBidIncrement(500000)">
-                                + ৳500,000
-                            </button>
-                        </div>
-
                         <form asp-action="PlaceBid" asp-route-id="@Model.Id" method="post" id="bidForm">
                             <input type="hidden" name="lotId" value="@current.Id" />
                             <div class="row g-3 align-items-end">
@@ -162,19 +151,34 @@ else
                                         <option value="">-- Select Team --</option>
                                         @foreach (var team in teams)
                                         {
-                                            <option value="@team.Id">@team.Name (Purse: ৳@team.TotalBudget.ToString("N0"))</option>
+                                            <option value="@team.Id" data-budget="@team.TotalBudget">@team.Name (Purse: ৳@team.TotalBudget.ToString("N0"))</option>
                                         }
                                     </select>
                                 </div>
                                 <div class="col-lg-4">
                                     <label class="form-label font-weight-bold">Bid Amount (৳)</label>
-                                    <input name="amount" id="bidAmountInput" type="number" step="1" min="@minBidAmount" value="@minBidAmount" class="form-control form-control-lg" required />
+                                    @{
+                                        var currentMinBid = highest?.Amount + 1 ?? current.Player.BasePrice;
+                                    }
+                                    <input name="amount" id="bidAmountInput" type="number" step="any" min="@currentMinBid" value="@currentMinBid" class="form-control form-control-lg" required />
                                 </div>
                                 <div class="col-lg-2">
                                     <button class="btn btn-primary btn-lg w-100 font-weight-bold" type="submit">Bid Now</button>
                                 </div>
                             </div>
                         </form>
+
+                        <script>
+                            document.querySelector('select[name="teamId"]').addEventListener('change', function(e) {
+                                var selectedOption = e.target.options[e.target.selectedIndex];
+                                var budget = selectedOption.getAttribute('data-budget');
+                                if (budget) {
+                                    document.getElementById('bidAmountInput').max = budget;
+                                } else {
+                                    document.getElementById('bidAmountInput').removeAttribute('max');
+                                }
+                            });
+                        </script>
 
                         <hr class="my-4" />
 
@@ -302,16 +306,6 @@ else
 
 @section Scripts {
     <script>
-        function setBidAmount(amount) {
-            document.getElementById('bidAmountInput').value = amount;
-        }
-
-        function addBidIncrement(increment) {
-            const input = document.getElementById('bidAmountInput');
-            const currentVal = parseFloat(input.value) || 0;
-            input.value = currentVal + increment;
-        }
-
         // Auto-refresh live status every 10 seconds if auction is Live
         @if (Model?.Status == AuctionStatus.Live && current is not null)
         {

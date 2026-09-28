@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 using POMS.Data;
 using POMS.Data.Models;
 
@@ -10,6 +11,10 @@ var appDataPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
 Directory.CreateDirectory(appDataPath);
 var dbPath = Path.Combine(appDataPath, "poms.db");
 var connectionString = $"Data Source={dbPath};Cache=Shared";
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(appDataPath, "Keys")))
+    .SetApplicationName("POMS");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();

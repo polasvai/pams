@@ -63,11 +63,17 @@
                                 @(auction.StartsAt == default ? "Not started" : auction.StartsAt.ToLocalTime().ToString("g"))
                             </td>
                             <td class="text-end">
-                                <div class="d-flex justify-content-end gap-2">
-                                    <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@auction.Id">Details</a>
+                                <div class="d-flex justify-content-end gap-1">
+                                    <a class="btn btn-sm btn-outline-secondary px-2" asp-action="Details" asp-route-id="@auction.Id" title="Details">📋</a>
                                     @if (auction.Status == AuctionStatus.Live || auction.Status == AuctionStatus.Paused)
                                     {
-                                        <a class="btn btn-sm btn-warning font-weight-bold" asp-action="Live" asp-route-id="@auction.Id">Live Room ↗</a>
+                                        <a class="btn btn-sm btn-warning font-weight-bold px-2" asp-action="Live" asp-route-id="@auction.Id" title="Live Room">⚡</a>
+                                    }
+                                    @if (User.Identity?.IsAuthenticated == true && (auction.Status == AuctionStatus.Draft || auction.Status == AuctionStatus.Completed))
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@auction.Id" method="post" onsubmit="return confirm('Are you sure you want to permanently delete this auction?');" class="m-0">
+                                            <button type="submit" class="btn btn-sm btn-danger px-2" title="Delete">🗑️</button>
+                                        </form>
                                     }
                                 </div>
                             </td>

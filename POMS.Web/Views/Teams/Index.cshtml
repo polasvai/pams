@@ -20,6 +20,14 @@
     </div>
 }
 
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        ⚠️ @error
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="row g-4">
     @foreach (var team in Model)
     {
@@ -66,11 +74,14 @@
 
                 <div class="d-flex justify-content-between align-items-center mt-auto">
                     <span class="small text-muted">👥 @acquiredCount player(s) acquired</span>
-                    <div class="d-flex gap-2">
-                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@team.Id">Squad Roster</a>
+                    <div class="d-flex gap-1 flex-wrap">
+                        <a class="btn btn-sm btn-outline-primary px-2" asp-action="Details" asp-route-id="@team.Id" title="Squad">📋</a>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@team.Id">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary px-2" asp-action="Edit" asp-route-id="@team.Id" title="Edit">✏️</a>
+                            <form asp-action="Delete" asp-route-id="@team.Id" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this team?');">
+                                <button type="submit" class="btn btn-sm btn-danger px-2" title="Delete">🗑️</button>
+                            </form>
                         }
                     </div>
                 </div>

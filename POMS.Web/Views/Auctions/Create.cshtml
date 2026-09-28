@@ -30,12 +30,12 @@
 
                     <div class="col-md-6">
                         <label class="form-label font-weight-bold" asp-for="StartsAt">Scheduled Start Date & Time</label>
-                        <input asp-for="StartsAt" type="datetime-local" class="form-control form-control-lg" />
+                        <input asp-for="StartsAt" type="datetime-local" class="form-control form-control-lg" value="@Model.StartsAt.ToString("yyyy-MM-ddTHH:mm")" />
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label font-weight-bold" asp-for="EndsAt">Estimated Closing Date & Time (Optional)</label>
-                        <input asp-for="EndsAt" type="datetime-local" class="form-control form-control-lg" />
+                        <input asp-for="EndsAt" type="datetime-local" class="form-control form-control-lg" value="@(Model.EndsAt?.ToString("yyyy-MM-ddTHH:mm"))" />
                     </div>
                 </div>
 

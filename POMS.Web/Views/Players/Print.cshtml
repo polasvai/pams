@@ -1,0 +1,152 @@
+@model Player
+@inject POMS.Web.Services.SettingsService SettingsService
+@{ 
+    ViewData["Title"] = "Print Players Copy - " + Model.FullName; 
+    Layout = null; // We use a blank layout for clean printing
+    var settings = SettingsService.GetSettings();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - POMS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'DM Sans', sans-serif;
+            padding: 2rem;
+        }
+        .print-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border: 2px solid #000;
+            padding: 40px;
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+            position: relative;
+        }
+        .print-watermark::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            background-image: url('@settings.LogoUrl');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.08;
+            z-index: 0;
+            pointer-events: none;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .print-watermark > * {
+            position: relative;
+            z-index: 1;
+        }
+        @@media print {
+            body {
+                background-color: #fff;
+                padding: 0;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .print-card {
+                box-shadow: none;
+                border: 2px solid #000 !important;
+                margin: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="text-center mb-4 no-print">
+        <button onclick="window.print()" class="btn btn-primary btn-lg font-weight-bold">
+            🖨️ Print Document
+        </button>
+        <button onclick="window.close()" class="btn btn-outline-secondary btn-lg ms-2">
+            Close Window
+        </button>
+    </div>
+
+    <div class="print-card rounded-4 print-watermark">
+        <div class="text-center mb-4 pb-3 border-bottom">
+            <h2 class="font-weight-bold mb-1">Players Copy</h2>
+            <p class="text-muted mb-0">Player Registration Form - BCL Auction</p>
+            <small class="text-muted">Date: @DateTime.Now.ToString("dd MMM yyyy")</small>
+        </div>
+
+        <div class="row align-items-center mb-4">
+            <div class="col-8">
+                <h3 class="h3 font-weight-bold mb-3">@Model.FullName <span class="text-secondary">| ID: #@Model.Id.ToString("D5")</span></h3>
+                <table class="table table-sm table-borderless fs-5">
+                    <tbody>
+                        <tr>
+                            <th class="text-muted" style="width: 170px;">Mobile Number:</th>
+                            <td class="font-weight-bold">@Model.MobileNumber</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Payment:</th>
+                            <td>@Model.PaymentMethod (@Model.PaymentNumber)</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">TxnID:</th>
+                            <td class="font-family-monospace">@Model.TxnID</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Jersey Info:</th>
+                            <td>@Model.JerseyName (No. @Model.JerseyNumber) - Size @Model.JerseySize</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Primary Role:</th>
+                            <td><span class="badge bg-dark">@Model.Role</span></td>
+                        </tr>
+                        @if (!string.IsNullOrEmpty(Model.BattingStyle))
+                        {
+                            <tr>
+                                <th class="text-muted">Batting Style:</th>
+                                <td>@Model.BattingStyle</td>
+                            </tr>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.BowlingStyle))
+                        {
+                            <tr>
+                                <th class="text-muted">Bowling Style:</th>
+                                <td>@Model.BowlingStyle</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-4 text-end">
+                @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+                {
+                    <img src="@Model.ProfilePictureUrl" alt="Applicant Photo" class="img-thumbnail shadow-sm" style="width: 150px; height: 150px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="bg-light border d-inline-flex align-items-center justify-content-center text-muted" style="width: 150px; height: 150px;">
+                        <small>No Photo Provided</small>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="alert alert-light border mt-4 mb-0 text-center">
+            <small class="text-muted">
+                This is an automatically generated players copy. <br />
+                Keep this copy for your records. Admin approval is required before you will appear in the active draft.
+            </small>
+        </div>
+    </div>
+</body>
+</html>

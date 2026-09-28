@@ -12,7 +12,7 @@
         </div>
 
         <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
                 <input asp-for="Id" type="hidden" />
                 <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
 
@@ -25,37 +25,62 @@
 
                     <div class="col-md-6">
                         <label class="form-label font-weight-bold" asp-for="MobileNumber">Mobile Number</label>
-                        <input asp-for="MobileNumber" class="form-control form-control-lg" />
+                        <input asp-for="MobileNumber" class="form-control form-control-lg" placeholder="e.g. 017XXXXXXXX" required pattern="^(\+8801|01)[3-9]\d{8}$" title="Valid Bangladesh mobile number starting with 01 or +8801" />
+                        <span asp-validation-for="MobileNumber" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label font-weight-bold" asp-for="Nationality">Nationality</label>
-                        <input asp-for="Nationality" class="form-control form-control-lg" />
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold">Update Profile Picture</label>
+                        @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+                        {
+                            <div class="mb-2">
+                                <img src="@Model.ProfilePictureUrl" alt="Current Pic" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" />
+                            </div>
+                        }
+                        <input type="file" name="profilePic" class="form-control form-control-lg" accept="image/*" />
+                        <small class="text-muted">Leave blank to keep existing picture.</small>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label font-weight-bold" asp-for="Role">Primary Role</label>
-                        <select asp-for="Role" asp-items="Html.GetEnumSelectList<PlayerRole>()" class="form-select form-select-lg"></select>
+                        <select asp-for="Role" asp-items="Html.GetEnumSelectList<PlayerRole>()" class="form-select form-select-lg" id="roleSelect"></select>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label font-weight-bold" asp-for="SkillRating">Skill Rating (1–100)</label>
-                        <input asp-for="SkillRating" type="number" min="1" max="100" class="form-control form-control-lg" required />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label font-weight-bold" asp-for="BasePrice">Base Price (৳)</label>
-                        <input asp-for="BasePrice" type="number" step="1000" min="0" class="form-control form-control-lg" required />
-                    </div>
-
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="battingStyleGroup" style="display: none;">
                         <label class="form-label font-weight-bold" asp-for="BattingStyle">Batting Style</label>
-                        <input asp-for="BattingStyle" class="form-control" />
+                        <select asp-for="BattingStyle" class="form-select form-select-lg">
+                            <option value="">-- Select --</option>
+                            <option value="Right Hand">Right Hand</option>
+                            <option value="Left Hand">Left Hand</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6" id="bowlingStyleGroup" style="display: none;">
+                        <label class="form-label font-weight-bold" asp-for="BowlingStyle">Bowling Style</label>
+                        <select asp-for="BowlingStyle" class="form-select form-select-lg">
+                            <option value="">-- Select --</option>
+                            <option value="Right Arm">Right Arm</option>
+                            <option value="Left Arm">Left Arm</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold" asp-for="BasePrice">Base Price (৳)</label>
+                        <input asp-for="BasePrice" type="number" step="any" class="form-control form-control-lg" required />
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label font-weight-bold" asp-for="BowlingStyle">Bowling Style</label>
-                        <input asp-for="BowlingStyle" class="form-control" />
+                        <label class="form-label font-weight-bold" asp-for="Category">Player Category</label>
+                        <select asp-for="Category" class="form-select form-select-lg">
+                            <option value="">-- Select Category --</option>
+                            <option value="A">Category A</option>
+                            <option value="B">Category B</option>
+                            <option value="C">Category C</option>
+                            <option value="D">Category D</option>
+                            <option value="Icon">Icon</option>
+                            <option value="Local">Local</option>
+                            <option value="Foreign">Foreign</option>
+                        </select>
                     </div>
 
                     <div class="col-12">
@@ -65,14 +90,67 @@
                             <small class="d-block text-muted">Inactive players will not be available for selection in new auction lots.</small>
                         </div>
                     </div>
+                    
+                    <div class="col-12 mt-5">
+                        <h4 class="h5 font-weight-bold border-bottom pb-2 mb-3">Jersey Details</h4>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="JerseyName">Jersey Name</label>
+                        <input asp-for="JerseyName" class="form-control form-control-lg" placeholder="Name on back" required />
+                        <span asp-validation-for="JerseyName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="JerseySize">Jersey Size</label>
+                        <select asp-for="JerseySize" class="form-select form-select-lg" required>
+                            <option value="">-- Select Size --</option>
+                            <option value="S">Small (S)</option>
+                            <option value="M">Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                            <option value="XXL">XXL</option>
+                        </select>
+                        <span asp-validation-for="JerseySize" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="JerseyNumber">Jersey Number</label>
+                        <input asp-for="JerseyNumber" class="form-control form-control-lg" placeholder="Which Number you want in your Jersey" required />
+                        <span asp-validation-for="JerseyNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 mt-5">
+                        <h4 class="h5 font-weight-bold border-bottom pb-2 mb-3">Payment Details</h4>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="PaymentMethod">Payment Method</label>
+                        <select asp-for="PaymentMethod" class="form-select form-select-lg" required>
+                            <option value="">-- Select --</option>
+                            <option value="bKash">bKash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                        </select>
+                        <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="PaymentNumber">Payment Number</label>
+                        <input asp-for="PaymentNumber" class="form-control form-control-lg" placeholder="e.g. 017XXXXXXXX" required />
+                        <span asp-validation-for="PaymentNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold" asp-for="TxnID">Transaction ID (TxnID)</label>
+                        <input asp-for="TxnID" class="form-control form-control-lg" placeholder="Enter TxnID" required />
+                        <span asp-validation-for="TxnID" class="text-danger small"></span>
+                    </div>
                 </div>
 
                 <hr class="my-4" />
 
                 <div class="d-flex justify-content-between align-items-center">
-                    <button class="btn btn-outline-danger btn-sm" type="submit" asp-action="Delete" asp-route-id="@Model.Id" onclick="return confirm('Archive this player?');">
-                        Archive Player
-                    </button>
                     <div class="d-flex gap-2">
                         <a class="btn btn-light" asp-action="Index">Cancel</a>
                         <button class="btn btn-primary px-4 font-weight-bold" type="submit">Save Changes</button>
@@ -82,3 +160,42 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var roleSelect = document.getElementById('roleSelect');
+            var battingStyleGroup = document.getElementById('battingStyleGroup');
+            var bowlingStyleGroup = document.getElementById('bowlingStyleGroup');
+
+            function updateVisibility() {
+                var val = roleSelect.options[roleSelect.selectedIndex].text;
+                var batInput = document.getElementById('BattingStyle');
+                var bowlInput = document.getElementById('BowlingStyle');
+                
+                // Batter or AllRounder -> Batting
+                if (val === 'Batter' || val === 'AllRounder') {
+                    battingStyleGroup.style.display = 'block';
+                    batInput.setAttribute('required', 'required');
+                } else {
+                    battingStyleGroup.style.display = 'none';
+                    batInput.removeAttribute('required');
+                    batInput.value = '';
+                }
+
+                // Bowler or AllRounder -> Bowling
+                if (val === 'Bowler' || val === 'AllRounder') {
+                    bowlingStyleGroup.style.display = 'block';
+                    bowlInput.setAttribute('required', 'required');
+                } else {
+                    bowlingStyleGroup.style.display = 'none';
+                    bowlInput.removeAttribute('required');
+                    bowlInput.value = '';
+                }
+            }
+
+            roleSelect.addEventListener('change', updateVisibility);
+            updateVisibility();
+        });
+    </script>
+}

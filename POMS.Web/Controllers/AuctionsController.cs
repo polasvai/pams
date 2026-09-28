@@ -12,7 +12,7 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
 {
     [AllowAnonymous]
     public async Task<IActionResult> Index() => View((await db.Auctions.Include(a => a.AuctionPlayers).ToListAsync()).OrderByDescending(a => a.StartsAt).ToList());
-    public IActionResult Create() => View(new Auction());
+    public IActionResult Create() => View(new Auction { StartsAt = DateTimeOffset.Now, EndsAt = DateTimeOffset.Now.AddHours(2) });
     [HttpPost]
     public async Task<IActionResult> Create(Auction auction, CancellationToken ct)
     {
@@ -23,6 +23,38 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
         TempData["Success"] = "Auction created.";
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    {
+        var auction = await db.Auctions.Include(a => a.AuctionPlayers).FirstOrDefaultAsync(a => a.Id == id, ct);
+        if (auction == null) return NotFound();
+        
+        if (auction.Status != AuctionStatus.Draft && auction.Status != AuctionStatus.Completed)
+        {
+            TempData["Error"] = "Only Draft or Completed auctions can be deleted.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Break circular dependency before deletion
+        auction.CurrentAuctionPlayerId = null;
+        await db.SaveChangesAsync(ct);
+
+        // Remove associated bids first
+        var auctionPlayerIds = auction.AuctionPlayers.Select(ap => ap.Id).ToList();
+        var bids = await db.Bids.Where(b => auctionPlayerIds.Contains(b.AuctionPlayerId)).ToListAsync(ct);
+        db.Bids.RemoveRange(bids);
+        
+        // Remove auction players
+        db.AuctionPlayers.RemoveRange(auction.AuctionPlayers);
+        
+        // Finally remove the auction
+        db.Auctions.Remove(auction);
+        await db.SaveChangesAsync(ct);
+        TempData["Success"] = "Auction deleted successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
     [AllowAnonymous]
     public async Task<IActionResult> Details(int id)
     {

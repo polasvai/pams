@@ -75,11 +75,14 @@ public sealed class AuctionService(ApplicationDbContext db)
         var highest = current?.Amount ?? lot.Player.BasePrice;
         if (current?.IsWinning == true && current.TeamId == teamId)
             return Fail("A team cannot bid against itself.");
-        if (amount < highest + auction.MinimumIncrement)
-            return Fail($"The bid must be at least {(highest + auction.MinimumIncrement):N0}.");
-        var spent = (await db.Bids.Where(b => b.TeamId == teamId && b.AuctionPlayer.AuctionId == id && b.IsWinning).ToListAsync(ct)).Sum(b => b.Amount);
-        if (amount > team.TotalBudget - spent)
-            return Fail("The team does not have enough remaining budget.");
+        
+        if (current == null && amount < lot.Player.BasePrice)
+            return Fail($"The opening bid must be at least the base price of {lot.Player.BasePrice:N0}.");
+        else if (current != null && amount <= current.Amount)
+            return Fail($"The bid must be higher than the current bid of {current.Amount:N0}.");
+            
+        if (amount > team.TotalBudget)
+            return Fail("The bid cannot exceed the team's total budget.");
         await db.Bids.Where(b => b.AuctionPlayerId == lotId && b.IsWinning).ExecuteUpdateAsync(s => s.SetProperty(b => b.IsWinning, false), ct);
         db.Bids.Add(new Bid { AuctionPlayerId = lotId, TeamId = teamId, Amount = amount, IsWinning = true, PlacedByUserId = userId });
         await db.SaveChangesAsync(ct);

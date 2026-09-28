@@ -12,7 +12,7 @@
         </div>
 
         <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
 
                 <div class="row g-4">
@@ -30,13 +30,13 @@
 
                     <div class="col-12">
                         <label class="form-label font-weight-bold" asp-for="TotalBudget">Total Auction Purse Budget (৳)</label>
-                        <input asp-for="TotalBudget" type="number" step="100000" min="0" class="form-control form-control-lg" placeholder="120000000" required />
+                        <input asp-for="TotalBudget" type="number" step="any" class="form-control form-control-lg" placeholder="120000000" required />
                         <small class="text-muted">This purse budget is strictly checked during the live auction against incoming bids.</small>
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label font-weight-bold" asp-for="LogoUrl">Franchise Logo URL (Optional)</label>
-                        <input asp-for="LogoUrl" class="form-control" placeholder="https://example.com/logo.png" />
+                        <label class="form-label font-weight-bold">Franchise Logo (Optional)</label>
+                        <input type="file" name="logoFile" class="form-control form-control-lg" accept="image/*" />
                     </div>
                 </div>
 
