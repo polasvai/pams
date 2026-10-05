@@ -37,8 +37,9 @@
                                 <img src="@Model.ProfilePictureUrl" alt="Current Pic" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" />
                             </div>
                         }
-                        <input type="file" name="profilePic" class="form-control form-control-lg" accept="image/*" />
-                        <small class="text-muted">Leave blank to keep existing picture.</small>
+                        <input type="file" name="profilePic" id="profilePic" class="form-control form-control-lg" accept="image/*" data-compress-max-kb="500" />
+                        <small class="text-muted d-block mt-1">Leave blank to keep existing picture. New photos are automatically compressed under 500KB.</small>
+                        <div id="profilePicFeedback" class="mt-2"></div>
                     </div>
 
                     <div class="col-md-6">

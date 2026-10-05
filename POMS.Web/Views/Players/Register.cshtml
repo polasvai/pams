@@ -41,8 +41,9 @@
 
                     <div class="col-md-6">
                         <label class="form-label font-weight-bold">Profile Picture</label>
-                        <input type="file" name="profilePic" class="form-control form-control-lg" accept="image/*" required />
-                        <small class="text-muted">A clear, front-facing headshot is required.</small>
+                        <input type="file" name="profilePic" id="profilePic" class="form-control form-control-lg" accept="image/*" required data-compress-max-kb="500" />
+                        <small class="text-muted d-block mt-1">A clear, front-facing headshot is required. High-resolution photos are automatically compressed to under 500KB before submission.</small>
+                        <div id="profilePicFeedback" class="mt-2"></div>
                     </div>
 
                     <div class="col-md-6">

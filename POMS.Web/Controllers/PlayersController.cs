@@ -30,17 +30,10 @@ public class PlayersController(ApplicationDbContext db) : Controller
         if (!ModelState.IsValid)
             return View(player);
             
-        if (profilePic != null && profilePic.Length > 0)
+        var picUrl = await SaveProfilePictureAsync(profilePic, env);
+        if (!string.IsNullOrEmpty(picUrl))
         {
-            var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "players");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-            var fileName = "player_" + Guid.NewGuid().ToString().Substring(0, 8) + Path.GetExtension(profilePic.FileName);
-            var filePath = Path.Combine(uploadsFolder, fileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await profilePic.CopyToAsync(stream);
-            }
-            player.ProfilePictureUrl = "/uploads/players/" + fileName;
+            player.ProfilePictureUrl = picUrl;
         }
             
         db.Players.Add(player);
@@ -70,17 +63,10 @@ public class PlayersController(ApplicationDbContext db) : Controller
         if (!ModelState.IsValid)
             return View(player);
 
-        if (profilePic != null && profilePic.Length > 0)
+        var picUrl = await SaveProfilePictureAsync(profilePic, env);
+        if (!string.IsNullOrEmpty(picUrl))
         {
-            var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "players");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-            var fileName = "player_" + Guid.NewGuid().ToString().Substring(0, 8) + Path.GetExtension(profilePic.FileName);
-            var filePath = Path.Combine(uploadsFolder, fileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await profilePic.CopyToAsync(stream);
-            }
-            player.ProfilePictureUrl = "/uploads/players/" + fileName;
+            player.ProfilePictureUrl = picUrl;
         }
 
         player.IsActive = false; // Admin will activate later
@@ -143,17 +129,10 @@ public class PlayersController(ApplicationDbContext db) : Controller
         if (!ModelState.IsValid)
             return View(player);
             
-        if (profilePic != null && profilePic.Length > 0)
+        var picUrl = await SaveProfilePictureAsync(profilePic, env);
+        if (!string.IsNullOrEmpty(picUrl))
         {
-            var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "players");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-            var fileName = "player_" + Guid.NewGuid().ToString().Substring(0, 8) + Path.GetExtension(profilePic.FileName);
-            var filePath = Path.Combine(uploadsFolder, fileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await profilePic.CopyToAsync(stream);
-            }
-            player.ProfilePictureUrl = "/uploads/players/" + fileName;
+            player.ProfilePictureUrl = picUrl;
         }
         else
         {
@@ -169,6 +148,29 @@ public class PlayersController(ApplicationDbContext db) : Controller
         TempData["Success"] = "Player updated.";
         return RedirectToAction(nameof(Index));
     }
+
+    private static async Task<string?> SaveProfilePictureAsync(IFormFile? profilePic, IWebHostEnvironment env)
+    {
+        if (profilePic == null || profilePic.Length == 0) return null;
+
+        var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "players");
+        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+        var ext = Path.GetExtension(profilePic.FileName).ToLowerInvariant();
+        if (string.IsNullOrEmpty(ext) || !new[] { ".jpg", ".jpeg", ".png", ".webp", ".jfif", ".gif" }.Contains(ext))
+        {
+            ext = ".jpg";
+        }
+
+        var fileName = $"player_{Guid.NewGuid():N}"[..18] + ext;
+        var filePath = Path.Combine(uploadsFolder, fileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await profilePic.CopyToAsync(stream);
+        }
+        return "/uploads/players/" + fileName;
+    }
+
     [HttpPost]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken ct)
     {
