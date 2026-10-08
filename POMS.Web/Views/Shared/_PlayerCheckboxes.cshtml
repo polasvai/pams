@@ -1,6 +1,262 @@
 @using Microsoft.EntityFrameworkCore
 @inject POMS.Data.ApplicationDbContext Db
+@model Auction?
+
 @{
-    var players = await Db.Players.Where(p => p.IsActive).OrderBy(p => p.FullName).ToListAsync();
+    var existingPlayerIds = Model?.AuctionPlayers?.Select(ap => ap.PlayerId).ToHashSet() ?? new HashSet<int>();
+    var allActivePlayers = await Db.Players.Where(p => p.IsActive).OrderBy(p => p.FullName).ToListAsync();
+    var availablePlayers = allActivePlayers.Where(p => !existingPlayerIds.Contains(p.Id)).ToList();
+    var categories = availablePlayers
+        .Select(p => string.IsNullOrWhiteSpace(p.Category) ? "Other" : p.Category.Trim())
+        .Distinct()
+        .OrderBy(c => c)
+        .ToList();
 }
-<div class="row g-2">@foreach (var player in players) { <div class="col-md-6"><label class="border rounded p-2 d-flex gap-2 align-items-center"><input class="form-check-input m-0" type="checkbox" name="playerIds" value="@player.Id" /> <span>@player.FullName <small class="text-muted">(@player.Role)</small></span></label></div> }</div>
+
+@if (availablePlayers.Count == 0)
+{
+    <div class="alert alert-info py-3 mb-0 text-center small">
+        ✓ <strong>All active players</strong> have already been added to this auction pool.
+    </div>
+}
+else
+{
+    <!-- Select All & Action Header -->
+    <div class="bg-light p-2 rounded-3 border mb-2">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" id="selectAllPlayers" style="cursor: pointer; width: 1.2em; height: 1.2em;" />
+                <label class="form-check-label fw-bold small ms-1" for="selectAllPlayers" style="cursor: pointer;">
+                    Select All (<span id="selectedPlayerCount">0</span>/<span id="totalPlayerCount">@availablePlayers.Count</span>)
+                </label>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 fw-semibold" id="btnSelectAll">Select All</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 fw-semibold" id="btnDeselectAll">Clear</button>
+            </div>
+        </div>
+
+        <!-- Quick Search & Category Filter Bar -->
+        <div class="mt-2">
+            <input type="text" id="playerSearchInput" class="form-control form-control-sm" placeholder="🔍 Quick search player name, role..." />
+        </div>
+
+        @if (categories.Count > 1)
+        {
+            <div class="d-flex flex-wrap gap-1 mt-2">
+                <button type="button" class="btn btn-sm btn-dark py-0 px-2 category-filter-btn active" data-category="ALL" style="font-size: 0.75rem;">
+                    All (@availablePlayers.Count)
+                </button>
+                @foreach (var cat in categories)
+                {
+                    var count = availablePlayers.Count(p => (string.IsNullOrWhiteSpace(p.Category) ? "Other" : p.Category.Trim()) == cat);
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 category-filter-btn" data-category="@cat" style="font-size: 0.75rem;">
+                        @cat (@count)
+                    </button>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Scrollable Player List -->
+    <div class="player-checkbox-list" style="max-height: 420px; overflow-y: auto; padding-right: 4px;">
+        <div class="d-flex flex-column gap-1">
+            @foreach (var player in availablePlayers)
+            {
+                var playerCat = string.IsNullOrWhiteSpace(player.Category) ? "Other" : player.Category.Trim();
+                <div class="player-select-item" data-category="@playerCat" data-name="@player.FullName.ToLowerInvariant()" data-role="@player.Role.ToString().ToLowerInvariant()">
+                    <label class="border rounded p-2 d-flex align-items-center gap-2 mb-0 bg-white hover-shadow w-100" style="cursor: pointer; transition: background-color 0.15s ease;">
+                        <input class="form-check-input m-0 player-select-checkbox" type="checkbox" name="playerIds" value="@player.Id" style="cursor: pointer; width: 1.15em; height: 1.15em; flex-shrink: 0;" />
+                        
+                        @if (!string.IsNullOrEmpty(player.ProfilePictureUrl))
+                        {
+                            <img src="@player.ProfilePictureUrl" alt="@player.FullName" class="rounded-circle border" style="width: 30px; height: 30px; object-fit: cover; flex-shrink: 0;" />
+                        }
+                        else
+                        {
+                            <span class="rounded-circle bg-light border d-inline-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 14px; flex-shrink: 0;">👤</span>
+                        }
+
+                        <div class="flex-grow-1 min-w-0" style="line-height: 1.2;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="fw-semibold text-truncate text-dark small">@player.FullName</span>
+                                @if (!string.IsNullOrWhiteSpace(player.Category))
+                                {
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">@player.Category</span>
+                                }
+                            </div>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <span>@player.Role</span>
+                                @if (!string.IsNullOrEmpty(player.BattingStyle))
+                                {
+                                    <span>· @player.BattingStyle</span>
+                                }
+                                <span class="ms-1 text-dark fw-bold">৳@player.BasePrice.ToString("N0")</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            }
+        </div>
+        <div id="noMatchingPlayersMsg" class="alert alert-light text-center small text-muted py-3 mt-2 d-none">
+            No players match the search or category filter.
+        </div>
+    </div>
+}
+
+<script>
+    (function () {
+        function initPlayerSelection() {
+            var selectAllCheckbox = document.getElementById('selectAllPlayers');
+            var btnSelectAll = document.getElementById('btnSelectAll');
+            var btnDeselectAll = document.getElementById('btnDeselectAll');
+            var searchInput = document.getElementById('playerSearchInput');
+            var categoryButtons = document.querySelectorAll('.category-filter-btn');
+            var playerItems = document.querySelectorAll('.player-select-item');
+            var playerCheckboxes = document.querySelectorAll('.player-select-checkbox');
+            var selectedCountSpan = document.getElementById('selectedPlayerCount');
+            var submitBtn = document.getElementById('addPlayersSubmitBtn');
+            var submitCountSpan = document.getElementById('submitBtnPlayerCount');
+            var noMatchingMsg = document.getElementById('noMatchingPlayersMsg');
+
+            var currentCategory = 'ALL';
+            var currentSearch = '';
+
+            function updateCounts() {
+                var checkedCount = 0;
+                var visibleCount = 0;
+                var visibleCheckedCount = 0;
+
+                for (var i = 0; i < playerItems.length; i++) {
+                    var item = playerItems[i];
+                    var cb = item.querySelector('.player-select-checkbox');
+                    if (cb && cb.checked) {
+                        checkedCount++;
+                    }
+                    if (item.style.display !== 'none') {
+                        visibleCount++;
+                        if (cb && cb.checked) {
+                            visibleCheckedCount++;
+                        }
+                    }
+                }
+
+                if (selectedCountSpan) selectedCountSpan.textContent = checkedCount;
+                if (submitCountSpan) submitCountSpan.textContent = checkedCount;
+
+                if (submitBtn) {
+                    submitBtn.disabled = checkedCount === 0;
+                }
+
+                if (selectAllCheckbox) {
+                    if (visibleCount === 0) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    } else if (visibleCheckedCount === visibleCount) {
+                        selectAllCheckbox.checked = true;
+                        selectAllCheckbox.indeterminate = false;
+                    } else if (visibleCheckedCount > 0) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = true;
+                    } else {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    }
+                }
+            }
+
+            function filterItems() {
+                var visibleMatches = 0;
+                for (var i = 0; i < playerItems.length; i++) {
+                    var item = playerItems[i];
+                    var itemCat = item.getAttribute('data-category') || '';
+                    var itemName = item.getAttribute('data-name') || '';
+                    var itemRole = item.getAttribute('data-role') || '';
+
+                    var matchesCat = (currentCategory === 'ALL' || itemCat === currentCategory);
+                    var matchesSearch = (currentSearch === '' || itemName.indexOf(currentSearch) !== -1 || itemRole.indexOf(currentSearch) !== -1);
+
+                    if (matchesCat && matchesSearch) {
+                        item.style.display = '';
+                        visibleMatches++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+
+                if (noMatchingMsg) {
+                    noMatchingMsg.classList.toggle('d-none', visibleMatches > 0);
+                }
+                updateCounts();
+            }
+
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function () {
+                    var isChecked = this.checked;
+                    for (var i = 0; i < playerItems.length; i++) {
+                        var item = playerItems[i];
+                        if (item.style.display !== 'none') {
+                            var cb = item.querySelector('.player-select-checkbox');
+                            if (cb) cb.checked = isChecked;
+                        }
+                    }
+                    updateCounts();
+                });
+            }
+
+            if (btnSelectAll) {
+                btnSelectAll.addEventListener('click', function () {
+                    for (var i = 0; i < playerItems.length; i++) {
+                        var item = playerItems[i];
+                        if (item.style.display !== 'none') {
+                            var cb = item.querySelector('.player-select-checkbox');
+                            if (cb) cb.checked = true;
+                        }
+                    }
+                    updateCounts();
+                });
+            }
+
+            if (btnDeselectAll) {
+                btnDeselectAll.addEventListener('click', function () {
+                    for (var i = 0; i < playerCheckboxes.length; i++) {
+                        playerCheckboxes[i].checked = false;
+                    }
+                    updateCounts();
+                });
+            }
+
+            for (var i = 0; i < playerCheckboxes.length; i++) {
+                playerCheckboxes[i].addEventListener('change', updateCounts);
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    currentSearch = this.value.trim().toLowerCase();
+                    filterItems();
+                });
+            }
+
+            categoryButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    categoryButtons.forEach(b => {
+                        b.classList.remove('btn-dark', 'active');
+                        b.classList.add('btn-outline-secondary');
+                    });
+                    this.classList.remove('btn-outline-secondary');
+                    this.classList.add('btn-dark', 'active');
+                    currentCategory = this.getAttribute('data-category');
+                    filterItems();
+                });
+            });
+
+            updateCounts();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPlayerSelection);
+        } else {
+            initPlayerSelection();
+        }
+    })();
+</script>

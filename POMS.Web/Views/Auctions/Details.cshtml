@@ -137,12 +137,16 @@
             @if (Model.Status == AuctionStatus.Draft)
             {
                 <div class="card p-4">
-                    <h2 class="h5 font-weight-bold mb-3">Add Players to Lot Pool</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 font-weight-bold mb-0">Add Players to Lot Pool</h2>
+                    </div>
                     <form asp-action="AddPlayers" asp-route-id="@Model.Id" method="post">
-                        <div class="mb-3" style="max-height: 350px; overflow-y: auto;">
-                            @await Html.PartialAsync("_PlayerCheckboxes")
+                        <div class="mb-3">
+                            @await Html.PartialAsync("_PlayerCheckboxes", Model)
                         </div>
-                        <button class="btn btn-primary w-100 font-weight-bold">➕ Add Selected Players</button>
+                        <button class="btn btn-primary w-100 font-weight-bold" id="addPlayersSubmitBtn" type="submit">
+                            ➕ Add Selected Players (<span id="submitBtnPlayerCount">0</span>)
+                        </button>
                     </form>
                 </div>
             }
