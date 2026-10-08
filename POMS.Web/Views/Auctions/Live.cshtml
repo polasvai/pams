@@ -12,6 +12,7 @@
             return idx >= 0 ? idx : 999;
         })
         .ThenBy(g => g.Key)
+        .Select(g => new { Key = g.Key, Lots = g.OrderBy(x => x.Player.Id).ToList() })
         .ToList();
     var bids = (IEnumerable<Bid>)(ViewBag.Bids ?? Array.Empty<Bid>());
     var current = Model?.CurrentAuctionPlayer;
@@ -293,7 +294,7 @@ else
                             @foreach (var group in categorizedPending)
                             {
                                 <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 queue-cat-filter" data-cat="@group.Key.ToLowerInvariant()" style="font-size: 0.72rem;">
-                                    @group.Key (@group.Count())
+                                    @group.Key (@group.Lots.Count)
                                 </button>
                             }
                         </div>
@@ -316,13 +317,13 @@ else
                             <div class="input-group input-group-sm">
                                 <select name="lotId" id="queueSelectDropdown" class="form-select form-select-sm" required @(current != null ? "disabled" : "")>
                                     <option value="">-- @(current != null ? "Lot in progress - finish first" : "Select Next Player") --</option>
-                                    @foreach (var group in categorizedPending)
+                                     @foreach (var group in categorizedPending)
                                     {
-                                        <optgroup label="@group.Key Category (@group.Count())" class="queue-optgroup" data-cat="@group.Key.ToLowerInvariant()">
-                                            @foreach (var lot in group)
+                                        <optgroup label="@group.Key Category (@group.Lots.Count)" class="queue-optgroup" data-cat="@group.Key.ToLowerInvariant()">
+                                            @foreach (var lot in group.Lots)
                                             {
                                                 <option value="@lot.Id" class="queue-option" data-cat="@(string.IsNullOrWhiteSpace(lot.Player.Category) ? "unassigned" : lot.Player.Category.Trim().ToLowerInvariant())" data-name="@lot.Player.FullName.ToLowerInvariant()" data-role="@lot.Player.Role.ToString().ToLowerInvariant()">
-                                                    #@lot.LotNumber · @lot.Player.FullName (@lot.Player.Role) - ৳@lot.Player.BasePrice.ToString("N0")
+                                                    [Reg #@lot.Player.Id] · @lot.Player.FullName (@lot.Player.Role) - ৳@lot.Player.BasePrice.ToString("N0")
                                                 </option>
                                             }
                                         </optgroup>
@@ -351,17 +352,17 @@ else
                                         @if (groupKey.Equals("Icon", StringComparison.OrdinalIgnoreCase)) { <span>👑</span> }
                                         <span>@groupKey Category</span>
                                     </span>
-                                    <span class="badge @badgeClass" style="font-size: 0.7rem;">@group.Count()</span>
+                                    <span class="badge @badgeClass" style="font-size: 0.7rem;">@group.Lots.Count</span>
                                 </div>
 
                                 <div class="d-flex flex-column gap-1">
-                                    @foreach (var lot in group)
+                                    @foreach (var lot in group.Lots)
                                     {
                                         var lotCat = string.IsNullOrWhiteSpace(lot.Player.Category) ? "unassigned" : lot.Player.Category.Trim().ToLowerInvariant();
                                         <div class="queue-item p-2 border rounded bg-white shadow-sm" data-cat="@lotCat" data-name="@lot.Player.FullName.ToLowerInvariant()" data-role="@lot.Player.Role.ToString().ToLowerInvariant()" data-lot-id="@lot.Id">
                                             <div class="d-flex align-items-center justify-content-between gap-2">
                                                 <div class="d-flex align-items-center gap-2 min-w-0">
-                                                    <span class="badge bg-light text-dark border flex-shrink-0" style="font-size: 0.72rem;">#@lot.LotNumber</span>
+                                                    <span class="badge bg-light text-dark border flex-shrink-0" style="font-size: 0.72rem;" title="Registration ID">Reg #@lot.Player.Id</span>
                                                     @if (!string.IsNullOrEmpty(lot.Player.ProfilePictureUrl))
                                                     {
                                                         <img src="@lot.Player.ProfilePictureUrl" alt="@lot.Player.FullName" class="rounded-circle border flex-shrink-0" style="width: 28px; height: 28px; object-fit: cover;" />

@@ -161,8 +161,7 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
                 var idx = preferredOrder.FindIndex(o => o.Equals(cat, StringComparison.OrdinalIgnoreCase));
                 return idx >= 0 ? idx : 999;
             })
-            .ThenBy(x => x.LotNumber)
-            .ThenBy(x => x.Player.FullName)
+            .ThenBy(x => x.Player.Id)
             .ToList();
 
         ViewBag.Bids = auction is null

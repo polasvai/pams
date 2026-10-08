@@ -54,7 +54,8 @@
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>Reg. No</th>
+                                <th>Lot #</th>
                                 <th>Player</th>
                                 <th>Role</th>
                                 <th>Status</th>
@@ -66,9 +67,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var lot in Model.AuctionPlayers.OrderBy(x => x.LotNumber))
+                            @foreach (var lot in Model.AuctionPlayers.OrderBy(x => x.Player.Id))
                             {
                                 <tr>
+                                    <td><span class="badge bg-secondary font-monospace">@lot.Player.Id</span></td>
                                     <td class="font-weight-bold">#@lot.LotNumber</td>
                                     <td>
                                         <strong class="d-block">@lot.Player.FullName</strong>
