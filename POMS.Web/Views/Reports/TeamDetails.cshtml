@@ -132,8 +132,10 @@
                                     @if (players.Count > 0)
                                     {
                                         int sl = 1;
-                                        @foreach (var player in players)
+                                        @foreach (var item in players)
                                         {
+                                            var player = item.Player;
+                                            var auctionName = item.Auction?.Name;
                                             <tr>
                                                 <td class="text-center">@sl</td>
                                                 <td class="text-center font-monospace">@player.Id</td>
@@ -155,30 +157,20 @@
                                                 <td class="text-center">@(string.IsNullOrEmpty(player.JerseyName) ? "-" : player.JerseyName)</td>
                                                 <td class="text-center">@(string.IsNullOrEmpty(player.JerseySize) ? "-" : player.JerseySize)</td>
                                                 <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.JerseyNumber) ? "-" : player.JerseyNumber)</td>
-                                                <td class="text-center"></td>
+                                                <td class="text-center small">
+                                                    @(string.IsNullOrEmpty(auctionName) ? "" : auctionName)
+                                                </td>
                                             </tr>
                                             sl++;
                                         }
                                     }
                                     else
                                     {
-                                        for (int i = 1; i <= 3; i++)
-                                        {
-                                            <tr class="empty-row">
-                                                <td class="text-center">@i</td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                            </tr>
-                                        }
+                                        <tr>
+                                            <td colspan="12" class="text-center py-4 text-muted bg-light">
+                                                <em>No player found in this team yet.</em>
+                                            </td>
+                                        </tr>
                                     }
                                 </tbody>
                             </table>
@@ -211,15 +203,17 @@
                                 <th style="width: 8%;">Jersey Name</th>
                                 <th style="width: 5%;">Jersey Size</th>
                                 <th style="width: 5%;">Jersey Number</th>
-                                <th style="width: 4%;">Note</th>
+                                <th style="width: 10%;">Auction (Note)</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (Model.TeamPlayers.Count > 0)
                             {
                                 int sl = 1;
-                                @foreach (var player in Model.TeamPlayers)
+                                @foreach (var item in Model.TeamPlayers)
                                 {
+                                    var player = item.Player;
+                                    var auctionName = item.Auction?.Name;
                                     <tr>
                                         <td class="text-center">@sl</td>
                                         <td class="text-center font-monospace">@player.Id</td>
@@ -241,31 +235,24 @@
                                         <td class="text-center">@(string.IsNullOrEmpty(player.JerseyName) ? "-" : player.JerseyName)</td>
                                         <td class="text-center">@(string.IsNullOrEmpty(player.JerseySize) ? "-" : player.JerseySize)</td>
                                         <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.JerseyNumber) ? "-" : player.JerseyNumber)</td>
-                                        <td class="text-center"></td>
+                                        <td class="text-center small">
+                                            @(string.IsNullOrEmpty(auctionName) ? "" : auctionName)
+                                        </td>
                                     </tr>
                                     sl++;
                                 }
                             }
                             else
                             {
-                                <!-- Blank template rows if no players assigned yet -->
-                                for (int i = 1; i <= 3; i++)
-                                {
-                                    <tr class="empty-row">
-                                        <td class="text-center">@i</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                }
+                                <tr>
+                                    <td colspan="12" class="text-center py-4 text-muted bg-light">
+                                        <div class="py-2">
+                                            <span class="fs-4 d-block mb-1">🏏</span>
+                                            <strong class="text-dark">No player found</strong>
+                                            <p class="small text-muted mb-0">No players have been acquired by @selectedTeam.Name in any auction yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -273,8 +260,8 @@
 
                 @if (Model.TeamPlayers.Count == 0)
                 {
-                    <div class="d-print-none alert alert-light border mt-3 small text-muted text-center">
-                        💡 No players have been acquired by this team in auction yet. Showing 3 blank rows matching the official printable template.
+                    <div class="d-print-none alert alert-warning border mt-3 small text-center">
+                        ℹ️ <strong>No player found</strong> for @selectedTeam.Name. When players are acquired in an auction, they will be listed here along with the auction name.
                     </div>
                 }
             }

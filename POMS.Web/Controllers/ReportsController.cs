@@ -82,16 +82,17 @@ public class ReportsController : Controller
         var allTeams = await _db.Teams.OrderBy(t => t.Name).ToListAsync();
 
         Team? selectedTeam = null;
-        List<Player> teamPlayers = new();
+        List<TeamPlayerItem> teamPlayers = new();
         List<TeamGroupReport> allTeamGroups = new();
         bool isAllTeams = teamId == -1;
 
         if (isAllTeams)
         {
-            // Load all teams and their acquired players
+            // Load all teams and their acquired auction players including auction details
             var allAuctionPlayers = await _db.AuctionPlayers
                 .Where(ap => ap.TeamId.HasValue)
                 .Include(ap => ap.Player)
+                .Include(ap => ap.Auction)
                 .OrderBy(ap => ap.LotNumber)
                 .ThenBy(ap => ap.Player.FullName)
                 .ToListAsync();
@@ -100,8 +101,15 @@ public class ReportsController : Controller
             {
                 var players = allAuctionPlayers
                     .Where(ap => ap.TeamId == team.Id)
-                    .Select(ap => ap.Player)
-                    .DistinctBy(p => p.Id)
+                    .GroupBy(ap => ap.PlayerId)
+                    .Select(g => g.First())
+                    .Select(ap => new TeamPlayerItem
+                    {
+                        Player = ap.Player,
+                        Auction = ap.Auction,
+                        SoldPrice = ap.SoldPrice,
+                        LotNumber = ap.LotNumber
+                    })
                     .ToList();
 
                 allTeamGroups.Add(new TeamGroupReport
@@ -118,14 +126,25 @@ public class ReportsController : Controller
 
             if (selectedTeam != null)
             {
-                teamPlayers = await _db.AuctionPlayers
+                var auctionPlayers = await _db.AuctionPlayers
                     .Where(ap => ap.TeamId == selectedTeam.Id)
                     .Include(ap => ap.Player)
+                    .Include(ap => ap.Auction)
                     .OrderBy(ap => ap.LotNumber)
                     .ThenBy(ap => ap.Player.FullName)
-                    .Select(ap => ap.Player)
-                    .DistinctBy(p => p.Id)
                     .ToListAsync();
+
+                teamPlayers = auctionPlayers
+                    .GroupBy(ap => ap.PlayerId)
+                    .Select(g => g.First())
+                    .Select(ap => new TeamPlayerItem
+                    {
+                        Player = ap.Player,
+                        Auction = ap.Auction,
+                        SoldPrice = ap.SoldPrice,
+                        LotNumber = ap.LotNumber
+                    })
+                    .ToList();
             }
         }
 
@@ -328,6 +347,7 @@ public class ReportsController : Controller
             var allAuctionPlayers = await _db.AuctionPlayers
                 .Where(ap => ap.TeamId.HasValue)
                 .Include(ap => ap.Player)
+                .Include(ap => ap.Auction)
                 .OrderBy(ap => ap.LotNumber)
                 .ThenBy(ap => ap.Player.FullName)
                 .ToListAsync();
@@ -336,8 +356,15 @@ public class ReportsController : Controller
             {
                 var players = allAuctionPlayers
                     .Where(ap => ap.TeamId == t.Id)
-                    .Select(ap => ap.Player)
-                    .DistinctBy(p => p.Id)
+                    .GroupBy(ap => ap.PlayerId)
+                    .Select(g => g.First())
+                    .Select(ap => new TeamPlayerItem
+                    {
+                        Player = ap.Player,
+                        Auction = ap.Auction,
+                        SoldPrice = ap.SoldPrice,
+                        LotNumber = ap.LotNumber
+                    })
                     .ToList();
 
                 groupsToExport.Add(new TeamGroupReport { Team = t, Players = players });
@@ -348,14 +375,25 @@ public class ReportsController : Controller
             var team = allTeams.FirstOrDefault(t => t.Id == teamId.Value);
             if (team == null) return NotFound("Team not found.");
 
-            var teamPlayers = await _db.AuctionPlayers
+            var auctionPlayers = await _db.AuctionPlayers
                 .Where(ap => ap.TeamId == team.Id)
                 .Include(ap => ap.Player)
+                .Include(ap => ap.Auction)
                 .OrderBy(ap => ap.LotNumber)
                 .ThenBy(ap => ap.Player.FullName)
-                .Select(ap => ap.Player)
-                .DistinctBy(p => p.Id)
                 .ToListAsync();
+
+            var teamPlayers = auctionPlayers
+                .GroupBy(ap => ap.PlayerId)
+                .Select(g => g.First())
+                .Select(ap => new TeamPlayerItem
+                {
+                    Player = ap.Player,
+                    Auction = ap.Auction,
+                    SoldPrice = ap.SoldPrice,
+                    LotNumber = ap.LotNumber
+                })
+                .ToList();
 
             groupsToExport.Add(new TeamGroupReport { Team = team, Players = teamPlayers });
         }
@@ -417,8 +455,11 @@ public class ReportsController : Controller
             if (teamPlayers.Count > 0)
             {
                 int sl = 1;
-                foreach (var p in teamPlayers)
+                foreach (var item in teamPlayers)
                 {
+                    var p = item.Player;
+                    var auctionName = item.Auction?.Name ?? "";
+
                     ws.Cell(currentRow, 1).Value = sl++;
                     ws.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
@@ -452,7 +493,7 @@ public class ReportsController : Controller
                     ws.Cell(currentRow, 11).Value = p.JerseyNumber ?? "-";
                     ws.Cell(currentRow, 11).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                    ws.Cell(currentRow, 12).Value = "";
+                    ws.Cell(currentRow, 12).Value = !string.IsNullOrEmpty(auctionName) ? auctionName : "";
                     ws.Cell(currentRow, 12).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                     for (int c = 1; c <= 12; c++)

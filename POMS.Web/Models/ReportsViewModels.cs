@@ -23,13 +23,22 @@ public class TeamDetailsReportViewModel
     public int? SelectedTeamId { get; set; }
     public bool IsAllTeams { get; set; }
     public Team? SelectedTeam { get; set; }
-    public List<Player> TeamPlayers { get; set; } = new();
+    public List<TeamPlayerItem> TeamPlayers { get; set; } = new();
     public List<TeamGroupReport> AllTeamGroups { get; set; } = new();
+}
+
+public class TeamPlayerItem
+{
+    public Player Player { get; set; } = null!;
+    public Auction? Auction { get; set; }
+    public decimal? SoldPrice { get; set; }
+    public int LotNumber { get; set; }
 }
 
 public class TeamGroupReport
 {
     public Team Team { get; set; } = null!;
-    public List<Player> Players { get; set; } = new();
+    public List<TeamPlayerItem> Players { get; set; } = new();
 }
+
 
