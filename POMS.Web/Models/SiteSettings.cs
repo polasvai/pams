@@ -11,6 +11,8 @@ public class SiteSettings
     public string HeroTitle { get; set; } = "Build your dream squad.";
     public string HeroSubtitle { get; set; } = "Master every bid.";
     public string RegistrationMessage { get; set; } = "Please pay the registration fee before submitting your form.";
+    public bool EnablePlayerRegistration { get; set; } = true;
+    public string RegistrationClosedMessage { get; set; } = "Player registration is currently closed. Please contact the tournament organizers for further information.";
     public List<SliderSlide> Slides { get; set; } = new();
 }
 

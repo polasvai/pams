@@ -3,6 +3,8 @@
 @{ 
     ViewData["Title"] = "Player Registration"; 
     var settings = SettingsService.GetSettings();
+    var isClosed = (ViewBag.IsClosed as bool?) == true || !settings.EnablePlayerRegistration;
+    var closedMessage = ViewBag.ClosedMessage as string ?? settings.RegistrationClosedMessage;
 }
 
 <div class="row justify-content-center py-5">
@@ -15,15 +17,41 @@
             <a class="btn btn-outline-secondary btn-sm" asp-controller="Home" asp-action="Index">← Back to Home</a>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(settings.RegistrationMessage))
+        @if (isClosed)
         {
-            <div class="alert alert-info border shadow-sm mb-4">
-                <strong>📢 Instructions:</strong> @settings.RegistrationMessage
+            <div class="card p-5 border-0 shadow-sm rounded-4 text-center my-4">
+                <div class="mb-3">
+                    <span class="display-3">🔒</span>
+                </div>
+                <h2 class="h3 font-weight-bold text-dark mb-2">Player Registration Closed</h2>
+                <p class="lead text-muted max-w-md mx-auto mb-4" style="max-width: 540px;">
+                    @(string.IsNullOrWhiteSpace(closedMessage) ? "Public player registration is currently closed. Please check back later or contact the tournament administration." : closedMessage)
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a class="btn btn-primary px-4 fw-bold" asp-controller="Home" asp-action="Index">← Return to Home</a>
+                    <a class="btn btn-outline-secondary px-4" asp-controller="Players" asp-action="Index">View Player Directory</a>
+                </div>
             </div>
         }
+        else
+        {
+            @if (TempData["Error"] is string error)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    ⚠️ @error
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
 
-        <div class="card p-4 p-md-5 border-0 shadow-lg rounded-4">
-            <form asp-action="Register" method="post" enctype="multipart/form-data">
+            @if (!string.IsNullOrWhiteSpace(settings.RegistrationMessage))
+            {
+                <div class="alert alert-info border shadow-sm mb-4">
+                    <strong>📢 Instructions:</strong> @settings.RegistrationMessage
+                </div>
+            }
+
+            <div class="card p-4 p-md-5 border-0 shadow-lg rounded-4">
+                <form asp-action="Register" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
 
                 <div class="row g-4">
@@ -133,6 +161,7 @@
                 </div>
             </form>
         </div>
+        }
     </div>
 </div>
 

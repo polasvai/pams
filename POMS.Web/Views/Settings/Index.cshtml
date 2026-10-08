@@ -51,8 +51,28 @@
                         <input asp-for="HeroSubtitle" class="form-control" required />
                     </div>
                     <div class="col-12">
-                        <label class="form-label font-weight-bold" asp-for="RegistrationMessage">Registration Page Alert Message</label>
-                        <textarea asp-for="RegistrationMessage" class="form-control" rows="3" placeholder="Enter instructions or payment details for registering players..."></textarea>
+                        <div class="card p-3 bg-light border-0 rounded-3">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" role="switch" asp-for="EnablePlayerRegistration" id="enablePlayerRegSwitch" style="width: 2.5em; height: 1.3em; cursor: pointer;">
+                                <label class="form-check-label font-weight-bold ms-2" for="enablePlayerRegSwitch" style="cursor: pointer;">
+                                    Enable Public Player Registration
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mb-3">
+                                When turned <strong>OFF</strong>, public player registration is stopped. Visitors navigating to the registration page will be informed that player registration is closed.
+                            </small>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label font-weight-bold small" asp-for="RegistrationMessage">Instructions / Alert (When Open)</label>
+                                    <textarea asp-for="RegistrationMessage" class="form-control form-control-sm" rows="3" placeholder="Instructions or payment details shown when registration is open..."></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label font-weight-bold small" asp-for="RegistrationClosedMessage">Message (When Registration is Closed)</label>
+                                    <textarea asp-for="RegistrationClosedMessage" class="form-control form-control-sm" rows="3" placeholder="Message shown to visitors when registration is closed..."></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

@@ -66,11 +66,14 @@ else
                             🏏 Players
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold text-primary @(currentPath.StartsWith("/Players/Register", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Players" asp-action="Register">
-                            📝 Player Registration
-                        </a>
-                    </li>
+                    @if (settings.EnablePlayerRegistration)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold text-primary @(currentPath.StartsWith("/Players/Register", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Players" asp-action="Register">
+                                📝 Player Registration
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link @(currentPath.StartsWith("/Players/DownloadCopy", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Players" asp-action="DownloadCopy">
                             🖨️ Download Players Copy

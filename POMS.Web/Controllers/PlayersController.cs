@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using POMS.Data;
 using POMS.Data.Models;
+using POMS.Web.Services;
 
 namespace POMS.Web.Controllers;
 
 [Authorize]
-public class PlayersController(ApplicationDbContext db) : Controller
+public class PlayersController(ApplicationDbContext db, SettingsService settingsService) : Controller
 {
     [AllowAnonymous]
     public async Task<IActionResult> Index(string? search)
@@ -56,12 +57,29 @@ public class PlayersController(ApplicationDbContext db) : Controller
     }
 
     [AllowAnonymous]
-    public IActionResult Register() => View(new Player());
+    public IActionResult Register()
+    {
+        var settings = settingsService.GetSettings();
+        if (!settings.EnablePlayerRegistration)
+        {
+            ViewBag.IsClosed = true;
+            ViewBag.ClosedMessage = settings.RegistrationClosedMessage;
+            return View(new Player());
+        }
+        return View(new Player());
+    }
 
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> Register(Player player, IFormFile? profilePic, [FromServices] IWebHostEnvironment env, CancellationToken ct)
     {
+        var settings = settingsService.GetSettings();
+        if (!settings.EnablePlayerRegistration)
+        {
+            TempData["Error"] = "Player registration is currently closed.";
+            return RedirectToAction(nameof(Register));
+        }
+
         ModelState.Remove(nameof(Player.SkillRating));
         ModelState.Remove(nameof(Player.BasePrice));
 
