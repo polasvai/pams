@@ -113,9 +113,10 @@
                                             }
                                             <div>
                                                 <strong class="d-block text-dark">@(lot.Player?.FullName ?? "Unknown")</strong>
-                                                <small class="text-muted">
-                                                    @(string.IsNullOrWhiteSpace(lot.Player?.Category) ? "" : $"Cat: {lot.Player.Category} · ")Rating: @(lot.Player?.SkillRating)/100
-                                                </small>
+                                                @if (!string.IsNullOrWhiteSpace(lot.Player?.Category))
+                                                {
+                                                    <small class="text-muted">Cat: @lot.Player.Category</small>
+                                                }
                                             </div>
                                         </div>
                                     </td>

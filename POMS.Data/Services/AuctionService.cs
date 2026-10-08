@@ -99,15 +99,28 @@ public sealed class AuctionService(ApplicationDbContext db)
         var winner = lot.Bids.FirstOrDefault(b => b.IsWinning);
         if (sold && winner is null)
             return Fail("A player cannot be sold without a winning bid.");
-        lot.Status = sold ? AuctionPlayerStatus.Sold : AuctionPlayerStatus.Unsold;
+
         if (sold)
         {
+            lot.Status = AuctionPlayerStatus.Sold;
             lot.SoldPrice = winner!.Amount;
             lot.TeamId = winner.TeamId;
         }
+        else
+        {
+            // When marked unsold, return player to Pending queue so they can be called again
+            lot.Status = AuctionPlayerStatus.Pending;
+            lot.SoldPrice = null;
+            lot.TeamId = null;
+            if (lot.Bids.Any())
+            {
+                db.Bids.RemoveRange(lot.Bids);
+            }
+        }
+
         auction.CurrentAuctionPlayerId = null;
         await db.SaveChangesAsync(ct);
-        return Ok(sold ? "Player sold." : "Player marked unsold.");
+        return Ok(sold ? "Player sold." : "Player marked unsold and returned to queue.");
     }
 
     public async Task<AuctionServiceResult> SellPlayerToTeamAsync(int id, int lotId, int teamId, decimal amount, string? userId = null, CancellationToken ct = default)
