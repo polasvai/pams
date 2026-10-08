@@ -120,9 +120,26 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
             return NotFound();
 
         ViewBag.Teams = await db.Teams.OrderBy(t => t.Name).ToListAsync();
-        ViewBag.PendingLots = auction is null
+
+        var preferredOrder = new List<string> { "Icon", "A", "B", "C", "D", "Local", "Foreign" };
+        var pendingLots = auction is null
             ? new List<AuctionPlayer>()
-            : await db.AuctionPlayers.Where(x => x.AuctionId == auction.Id && x.Status == AuctionPlayerStatus.Pending).Include(x => x.Player).OrderBy(x => x.LotNumber).ToListAsync();
+            : await db.AuctionPlayers
+                .Where(x => x.AuctionId == auction.Id && x.Status == AuctionPlayerStatus.Pending)
+                .Include(x => x.Player)
+                .ToListAsync();
+
+        ViewBag.PendingLots = pendingLots
+            .OrderBy(x =>
+            {
+                var cat = x.Player.Category?.Trim() ?? "";
+                var idx = preferredOrder.FindIndex(o => o.Equals(cat, StringComparison.OrdinalIgnoreCase));
+                return idx >= 0 ? idx : 999;
+            })
+            .ThenBy(x => x.LotNumber)
+            .ThenBy(x => x.Player.FullName)
+            .ToList();
+
         ViewBag.Bids = auction is null
             ? new List<Bid>()
             : (await db.Bids.Where(b => b.AuctionPlayer.AuctionId == auction.Id && b.AuctionPlayerId == auction.CurrentAuctionPlayerId).Include(b => b.Team).ToListAsync()).OrderByDescending(b => b.Amount).ToList();

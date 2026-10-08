@@ -3,6 +3,16 @@
     ViewData["Title"] = Model?.Name ?? "Live Auction Console";
     var teams = (IEnumerable<Team>)(ViewBag.Teams ?? Array.Empty<Team>());
     var pending = (IEnumerable<AuctionPlayer>)(ViewBag.PendingLots ?? Array.Empty<AuctionPlayer>());
+    var preferredOrder = new List<string> { "Icon", "A", "B", "C", "D", "Local", "Foreign" };
+    var categorizedPending = pending
+        .GroupBy(x => string.IsNullOrWhiteSpace(x.Player.Category) ? "Unassigned" : x.Player.Category.Trim())
+        .OrderBy(g =>
+        {
+            var idx = preferredOrder.FindIndex(o => o.Equals(g.Key, StringComparison.OrdinalIgnoreCase));
+            return idx >= 0 ? idx : 999;
+        })
+        .ThenBy(g => g.Key)
+        .ToList();
     var bids = (IEnumerable<Bid>)(ViewBag.Bids ?? Array.Empty<Bid>());
     var current = Model?.CurrentAuctionPlayer;
     var highest = bids.FirstOrDefault();
@@ -220,45 +230,126 @@ else
 
         <!-- Sidebar Column (Lot Queue & Bidding Audit Trail) -->
         <div class="col-xl-4">
-            <!-- Next Player Queue -->
-            <div class="card p-3 mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+            <!-- Next Player Queue (Grouped by Category with Live Search) -->
+            <div class="card p-3 mb-4 shadow-sm border-0">
+                <div class="d-flex justify-content-between align-items-center mb-2">
                     <h3 class="h6 font-weight-bold text-uppercase text-muted mb-0">Lot Queue</h3>
                     <span class="badge bg-primary rounded-pill">@pending.Count() Pending</span>
                 </div>
+
                 @if (pending.Any())
                 {
-                    if (User.Identity?.IsAuthenticated == true && Model.Status == AuctionStatus.Live)
+                    <!-- Live Search Input -->
+                    <div class="mb-2">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-end-0">🔍</span>
+                            <input type="text" id="queueLiveSearchInput" class="form-control form-control-sm border-start-0" placeholder="Live search by name, role, category..." autocomplete="off" />
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnQueueSearchClear" style="display: none;">✕</button>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter Pills -->
+                    @if (categorizedPending.Count > 1)
                     {
-                        <form asp-action="SelectPlayer" asp-route-id="@Model.Id" method="post">
-                            <div class="mb-2">
-                                <select name="lotId" class="form-select" required>
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <button type="button" class="btn btn-sm btn-dark py-0 px-2 queue-cat-filter active" data-cat="ALL" style="font-size: 0.72rem;">
+                                All (@pending.Count())
+                            </button>
+                            @foreach (var group in categorizedPending)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 queue-cat-filter" data-cat="@group.Key.ToLowerInvariant()" style="font-size: 0.72rem;">
+                                    @group.Key (@group.Count())
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    @if (User.Identity?.IsAuthenticated == true && Model.Status == AuctionStatus.Live)
+                    {
+                        <!-- Quick Call Dropdown by Category for Operator -->
+                        <form asp-action="SelectPlayer" asp-route-id="@Model.Id" method="post" class="mb-3" id="quickSelectForm">
+                            <div class="input-group input-group-sm">
+                                <select name="lotId" id="queueSelectDropdown" class="form-select form-select-sm" required>
                                     <option value="">-- Select Next Player --</option>
-                                    @foreach (var lot in pending)
+                                    @foreach (var group in categorizedPending)
                                     {
-                                        <option value="@lot.Id">
-                                            #@lot.LotNumber · @lot.Player.FullName (@lot.Player.Role) - ৳@lot.Player.BasePrice.ToString("N0")
-                                        </option>
+                                        <optgroup label="@group.Key Category (@group.Count())" class="queue-optgroup" data-cat="@group.Key.ToLowerInvariant()">
+                                            @foreach (var lot in group)
+                                            {
+                                                <option value="@lot.Id" class="queue-option" data-cat="@(string.IsNullOrWhiteSpace(lot.Player.Category) ? "unassigned" : lot.Player.Category.Trim().ToLowerInvariant())" data-name="@lot.Player.FullName.ToLowerInvariant()" data-role="@lot.Player.Role.ToString().ToLowerInvariant()">
+                                                    #@lot.LotNumber · @lot.Player.FullName (@lot.Player.Role) - ৳@lot.Player.BasePrice.ToString("N0")
+                                                </option>
+                                            }
+                                        </optgroup>
                                     }
                                 </select>
+                                <button class="btn btn-primary btn-sm fw-bold px-3" type="submit" title="Bring selected player to the auction block">
+                                    📢 Call
+                                </button>
                             </div>
-                            <button class="btn btn-outline-primary btn-sm w-100 font-weight-bold" type="submit">
-                                📢 Bring Player to Block
-                            </button>
                         </form>
                     }
-                    else
-                    {
-                        <ul class="list-group list-group-flush small">
-                            @foreach (var lot in pending.Take(5))
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <span>#@lot.LotNumber · <strong>@lot.Player.FullName</strong></span>
-                                    <span class="badge bg-light text-dark">৳@lot.Player.BasePrice.ToString("N0")</span>
-                                </li>
-                            }
-                        </ul>
-                    }
+
+                    <!-- Categorized Visual Queue List -->
+                    <div class="queue-items-container" style="max-height: 400px; overflow-y: auto; padding-right: 2px;">
+                        @foreach (var group in categorizedPending)
+                        {
+                            var groupKey = group.Key;
+                            var badgeClass = groupKey.Equals("Icon", StringComparison.OrdinalIgnoreCase) ? "bg-warning text-dark border-warning" :
+                                             groupKey.Equals("A", StringComparison.OrdinalIgnoreCase) ? "bg-danger-subtle text-danger border-danger-subtle" :
+                                             groupKey.Equals("B", StringComparison.OrdinalIgnoreCase) ? "bg-primary-subtle text-primary border-primary-subtle" :
+                                             groupKey.Equals("C", StringComparison.OrdinalIgnoreCase) ? "bg-success-subtle text-success border-success-subtle" : "bg-light text-dark border";
+
+                            <div class="queue-category-section mb-2" data-cat="@groupKey.ToLowerInvariant()">
+                                <div class="d-flex justify-content-between align-items-center py-1 px-2 mb-1 rounded bg-light border">
+                                    <span class="fw-bold small text-uppercase d-flex align-items-center gap-1">
+                                        @if (groupKey.Equals("Icon", StringComparison.OrdinalIgnoreCase)) { <span>👑</span> }
+                                        <span>@groupKey Category</span>
+                                    </span>
+                                    <span class="badge @badgeClass" style="font-size: 0.7rem;">@group.Count()</span>
+                                </div>
+
+                                <div class="d-flex flex-column gap-1">
+                                    @foreach (var lot in group)
+                                    {
+                                        var lotCat = string.IsNullOrWhiteSpace(lot.Player.Category) ? "unassigned" : lot.Player.Category.Trim().ToLowerInvariant();
+                                        <div class="queue-item p-2 border rounded bg-white shadow-sm" data-cat="@lotCat" data-name="@lot.Player.FullName.ToLowerInvariant()" data-role="@lot.Player.Role.ToString().ToLowerInvariant()" data-lot-id="@lot.Id">
+                                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                                <div class="d-flex align-items-center gap-2 min-w-0">
+                                                    <span class="badge bg-light text-dark border flex-shrink-0" style="font-size: 0.72rem;">#@lot.LotNumber</span>
+                                                    @if (!string.IsNullOrEmpty(lot.Player.ProfilePictureUrl))
+                                                    {
+                                                        <img src="@lot.Player.ProfilePictureUrl" alt="@lot.Player.FullName" class="rounded-circle border flex-shrink-0" style="width: 28px; height: 28px; object-fit: cover;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="rounded-circle bg-light border d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; font-size: 13px;">👤</span>
+                                                    }
+                                                    <div class="min-w-0" style="line-height: 1.2;">
+                                                        <strong class="text-truncate d-block text-dark small">@lot.Player.FullName</strong>
+                                                        <small class="text-muted" style="font-size: 0.72rem;">@lot.Player.Role · ৳@lot.Player.BasePrice.ToString("N0")</small>
+                                                    </div>
+                                                </div>
+                                                @if (User.Identity?.IsAuthenticated == true && Model.Status == AuctionStatus.Live)
+                                                {
+                                                    <form asp-action="SelectPlayer" asp-route-id="@Model.Id" method="post" class="m-0 flex-shrink-0">
+                                                        <input type="hidden" name="lotId" value="@lot.Id" />
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem;" title="Bring to auction block">
+                                                            📢 Call
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div id="noQueueMatches" class="alert alert-light text-center small text-muted py-3 mt-2 d-none">
+                            No matching players in queue.
+                        </div>
+                    </div>
                 }
                 else
                 {
@@ -321,5 +412,124 @@ else
             }, 10000);
             </text>
         }
+
+        // Live Search and Category Filter for Lot Queue
+        (function () {
+            function initQueueFilter() {
+                var searchInput = document.getElementById('queueLiveSearchInput');
+                var clearBtn = document.getElementById('btnQueueSearchClear');
+                var catButtons = document.querySelectorAll('.queue-cat-filter');
+                var sections = document.querySelectorAll('.queue-category-section');
+                var items = document.querySelectorAll('.queue-item');
+                var optgroups = document.querySelectorAll('.queue-optgroup');
+                var noMatchesMsg = document.getElementById('noQueueMatches');
+
+                var currentCat = 'ALL';
+                var currentTerm = '';
+
+                function filterQueue() {
+                    var visibleTotal = 0;
+
+                    // Filter visual queue list
+                    sections.forEach(function (sec) {
+                        var secCat = (sec.getAttribute('data-cat') || '').toLowerCase();
+                        var secItems = sec.querySelectorAll('.queue-item');
+                        var visibleInSec = 0;
+
+                        secItems.forEach(function (item) {
+                            var itemCat = (item.getAttribute('data-cat') || '').toLowerCase();
+                            var itemName = (item.getAttribute('data-name') || '').toLowerCase();
+                            var itemRole = (item.getAttribute('data-role') || '').toLowerCase();
+
+                            var matchCat = (currentCat === 'ALL' || itemCat === currentCat.toLowerCase());
+                            var matchTerm = (currentTerm === '' || 
+                                             itemName.indexOf(currentTerm) !== -1 || 
+                                             itemRole.indexOf(currentTerm) !== -1 || 
+                                             itemCat.indexOf(currentTerm) !== -1);
+
+                            if (matchCat && matchTerm) {
+                                item.style.display = '';
+                                visibleInSec++;
+                                visibleTotal++;
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+
+                        sec.style.display = visibleInSec > 0 ? '' : 'none';
+                    });
+
+                    // Filter dropdown optgroups and options if present
+                    optgroups.forEach(function (og) {
+                        var ogCat = (og.getAttribute('data-cat') || '').toLowerCase();
+                        var ogOptions = og.querySelectorAll('.queue-option');
+                        var visibleInOg = 0;
+
+                        ogOptions.forEach(function (opt) {
+                            var optCat = (opt.getAttribute('data-cat') || '').toLowerCase();
+                            var optName = (opt.getAttribute('data-name') || '').toLowerCase();
+                            var optRole = (opt.getAttribute('data-role') || '').toLowerCase();
+
+                            var matchCat = (currentCat === 'ALL' || optCat === currentCat.toLowerCase());
+                            var matchTerm = (currentTerm === '' || 
+                                             optName.indexOf(currentTerm) !== -1 || 
+                                             optRole.indexOf(currentTerm) !== -1 || 
+                                             optCat.indexOf(currentTerm) !== -1);
+
+                            if (matchCat && matchTerm) {
+                                opt.style.display = '';
+                                visibleInOg++;
+                            } else {
+                                opt.style.display = 'none';
+                            }
+                        });
+
+                        og.style.display = visibleInOg > 0 ? '' : 'none';
+                    });
+
+                    if (noMatchesMsg) {
+                        noMatchesMsg.classList.toggle('d-none', visibleTotal > 0);
+                    }
+                    if (clearBtn) {
+                        clearBtn.style.display = currentTerm ? '' : 'none';
+                    }
+                }
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', function () {
+                        currentTerm = this.value.trim().toLowerCase();
+                        filterQueue();
+                    });
+                }
+
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', function () {
+                        searchInput.value = '';
+                        currentTerm = '';
+                        filterQueue();
+                        searchInput.focus();
+                    });
+                }
+
+                catButtons.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        catButtons.forEach(b => {
+                            b.classList.remove('btn-dark', 'active');
+                            b.classList.add('btn-outline-secondary');
+                        });
+                        this.classList.remove('btn-outline-secondary');
+                        this.classList.add('btn-dark', 'active');
+                        currentCat = this.getAttribute('data-cat') || 'ALL';
+                        filterQueue();
+                    });
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initQueueFilter);
+            } else {
+                initQueueFilter();
+            }
+        })();
     </script>
 }
