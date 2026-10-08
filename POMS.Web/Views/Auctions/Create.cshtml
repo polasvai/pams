@@ -16,16 +16,10 @@
                 <div asp-validation-summary="All" class="alert alert-danger py-2 small" role="alert"></div>
 
                 <div class="row g-4">
-                    <div class="col-md-8">
+                    <div class="col-12">
                         <label class="form-label font-weight-bold" asp-for="Name">Auction Event Title</label>
                         <input asp-for="Name" class="form-control form-control-lg" placeholder="e.g. 2026 Premier T20 Mega Auction" required />
                         <span asp-validation-for="Name" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label font-weight-bold" asp-for="MinimumIncrement">Min Bid Increment (৳)</label>
-                        <input asp-for="MinimumIncrement" type="number" step="5000" min="1000" class="form-control form-control-lg" value="50000" required />
-                        <span asp-validation-for="MinimumIncrement" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6">

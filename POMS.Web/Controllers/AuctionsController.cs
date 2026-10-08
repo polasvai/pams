@@ -12,10 +12,12 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
 {
     [AllowAnonymous]
     public async Task<IActionResult> Index() => View((await db.Auctions.Include(a => a.AuctionPlayers).ToListAsync()).OrderByDescending(a => a.StartsAt).ToList());
-    public IActionResult Create() => View(new Auction { StartsAt = DateTimeOffset.Now, EndsAt = DateTimeOffset.Now.AddHours(2) });
+    public IActionResult Create() => View(new Auction { StartsAt = DateTimeOffset.Now, EndsAt = DateTimeOffset.Now.AddHours(2), MinimumIncrement = 0 });
     [HttpPost]
     public async Task<IActionResult> Create(Auction auction, CancellationToken ct)
     {
+        ModelState.Remove(nameof(Auction.MinimumIncrement));
+        auction.MinimumIncrement = 0;
         if (!ModelState.IsValid)
             return View(auction);
         db.Auctions.Add(auction);

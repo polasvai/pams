@@ -124,7 +124,7 @@ public class Auction
         get; set;
     }
     public AuctionStatus Status { get; set; } = AuctionStatus.Draft;
-    [Range(1, double.MaxValue)] public decimal MinimumIncrement { get; set; } = 5000;
+    [Range(0, double.MaxValue)] public decimal MinimumIncrement { get; set; } = 0;
     public int? CurrentAuctionPlayerId
     {
         get; set;

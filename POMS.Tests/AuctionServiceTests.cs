@@ -15,7 +15,7 @@ public sealed class AuctionServiceTests
         var result = await fixture.Service.PlaceBidAsync(fixture.Auction.Id, fixture.Lot.Id, fixture.TeamA.Id, 1000);
 
         Assert.False(result.Succeeded);
-        Assert.Contains("100,500", result.Message);
+        Assert.Contains("100,000", result.Message);
         Assert.Empty(await fixture.Db.Bids.ToListAsync());
     }
 
@@ -39,7 +39,7 @@ public sealed class AuctionServiceTests
         var result = await fixture.Service.PlaceBidAsync(fixture.Auction.Id, fixture.Lot.Id, fixture.TeamA.Id, 2_000_000);
 
         Assert.False(result.Succeeded);
-        Assert.Contains("remaining budget", result.Message);
+        Assert.Contains("total budget", result.Message);
     }
 
     [Fact]

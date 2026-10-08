@@ -6,7 +6,7 @@
     var bids = (IEnumerable<Bid>)(ViewBag.Bids ?? Array.Empty<Bid>());
     var current = Model?.CurrentAuctionPlayer;
     var highest = bids.FirstOrDefault();
-    var minBidAmount = (highest?.Amount ?? current?.Player.BasePrice ?? 0) + (Model?.MinimumIncrement ?? 5000);
+    var minBidAmount = highest?.Amount + 1 ?? current?.Player.BasePrice ?? 0;
 }
 
 @if (Model is null)
@@ -35,7 +35,10 @@ else
                     @if (Model.Status == AuctionStatus.Live) { <i class="live-dot animate-pulse"></i> }
                     @Model.Status
                 </span>
-                <span class="text-muted small">Min Increment: ৳@Model.MinimumIncrement.ToString("N0")</span>
+                @if (Model.MinimumIncrement > 0)
+                {
+                    <span class="text-muted small">Min Increment: ৳@Model.MinimumIncrement.ToString("N0")</span>
+                }
             </div>
             <h1 class="h2 font-weight-bold mb-0">@Model.Name</h1>
         </div>
