@@ -13,7 +13,13 @@ public class CategoryGroup
 {
     public string CategoryName { get; set; } = string.Empty;
     public string DisplayTitle => $"{CategoryName} Category Player List";
-    public List<Player> Players { get; set; } = new();
+    public List<CategoryPlayerItem> Players { get; set; } = new();
+}
+
+public class CategoryPlayerItem
+{
+    public Player Player { get; set; } = null!;
+    public Team? CurrentTeam { get; set; }
 }
 
 public class TeamDetailsReportViewModel

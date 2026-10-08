@@ -57,22 +57,24 @@
                         </tr>
                         <tr class="column-header-row">
                             <th style="width: 5%;">SL</th>
-                            <th style="width: 14%;">Player Regi. No.</th>
+                            <th style="width: 5%;">Player Regi. No.</th>
                             <th style="width: 11%;">Player Image</th>
                             <th style="width: 22%;">Player Name</th>
                             <th style="width: 12%;">Role</th>
                             <th style="width: 11%;">Batting Style</th>
                             <th style="width: 11%;">Bowling Style</th>
                             <th style="width: 11%;">Mobile</th>
-                            <th style="width: 8%;">Note</th>
+                            <th style="width: 17%;">Current Team</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (group.Players.Count > 0)
                         {
                             int sl = 1;
-                            @foreach (var player in group.Players)
+                            @foreach (var item in group.Players)
                             {
+                                var player = item.Player;
+                                var currentTeam = item.CurrentTeam;
                                 <tr>
                                     <td class="text-center">@sl</td>
                                     <td class="text-center font-monospace">@player.Id</td>
@@ -91,7 +93,18 @@
                                     <td class="text-center">@(string.IsNullOrEmpty(player.BattingStyle) ? "-" : player.BattingStyle)</td>
                                     <td class="text-center">@(string.IsNullOrEmpty(player.BowlingStyle) ? "-" : player.BowlingStyle)</td>
                                     <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.MobileNumber) ? "-" : player.MobileNumber)</td>
-                                    <td class="text-center"></td>
+                                    <td class="text-center">
+                                        @if (currentTeam != null)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1 fw-bold">
+                                                @currentTeam.Name @(string.IsNullOrEmpty(currentTeam.ShortCode) ? "" : $"({currentTeam.ShortCode})")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border px-2 py-1">Unsold</span>
+                                        }
+                                    </td>
                                 </tr>
                                 sl++;
                             }
@@ -179,8 +192,8 @@
     }
 
     .player-photo {
-        width: 36px;
-        height: 36px;
+        width: 100%;
+        height: 80px;
         object-fit: cover;
         border-radius: 4px;
         border: 1px solid #888;
@@ -188,8 +201,8 @@
     }
 
     .photo-placeholder {
-        width: 36px;
-        height: 36px;
+        width: 100%;
+        height: 80px;
         line-height: 36px;
         text-align: center;
         background: #eee;

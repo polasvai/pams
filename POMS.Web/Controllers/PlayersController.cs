@@ -13,6 +13,19 @@ public class PlayersController(ApplicationDbContext db) : Controller
     public async Task<IActionResult> Index(string? search)
     {
         ViewBag.Search = search;
+
+        var soldLots = await db.AuctionPlayers
+            .Where(ap => ap.Status == AuctionPlayerStatus.Sold && ap.TeamId.HasValue)
+            .Include(ap => ap.Team)
+            .ToListAsync();
+
+        ViewBag.SoldPlayerTeams = soldLots
+            .GroupBy(ap => ap.PlayerId)
+            .ToDictionary(
+                g => g.Key, 
+                g => !string.IsNullOrEmpty(g.First().Team?.ShortCode) ? $"{g.First().Team!.Name} ({g.First().Team!.ShortCode})" : (g.First().Team?.Name ?? "Sold")
+            );
+
         return View(await db.Players.Where(p => string.IsNullOrWhiteSpace(search) || p.FullName.Contains(search) || (p.MobileNumber != null && p.MobileNumber.Contains(search))).OrderBy(p => p.Id).ToListAsync());
     }
     public IActionResult Create() => View(new Player());

@@ -111,9 +111,28 @@
                             </td>
                             <td class="font-weight-bold">৳@player.BasePrice.ToString("N0")</td>
                             <td>
-                                <span class="badge @(player.IsActive ? "bg-success" : "bg-secondary")">
-                                    @(player.IsActive ? "Active" : "Archived")
-                                </span>
+                                @{
+                                    var soldTeams = ViewBag.SoldPlayerTeams as Dictionary<int, string> ?? new();
+                                    var isSold = soldTeams.TryGetValue(player.Id, out var teamName);
+                                }
+                                <div class="d-flex flex-column gap-1 align-items-start">
+                                    @if (isSold)
+                                    {
+                                        <span class="badge bg-success">
+                                            Sold (@teamName)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            Unsold
+                                        </span>
+                                    }
+                                    @if (!player.IsActive)
+                                    {
+                                        <span class="badge bg-secondary" style="font-size: 0.7rem;">Archived</span>
+                                    }
+                                </div>
                             </td>
                             @if (User.Identity?.IsAuthenticated == true)
                             {

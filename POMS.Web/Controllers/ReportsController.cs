@@ -26,6 +26,14 @@ public class ReportsController : Controller
         var settings = _settingsService.GetSettings();
         var allPlayers = await _db.Players.OrderBy(p => p.FullName).ToListAsync();
 
+        var soldLots = await _db.AuctionPlayers
+            .Where(ap => ap.Status == AuctionPlayerStatus.Sold && ap.TeamId.HasValue)
+            .Include(ap => ap.Team)
+            .ToListAsync();
+        var playerTeamMap = soldLots
+            .GroupBy(ap => ap.PlayerId)
+            .ToDictionary(g => g.Key, g => g.First().Team);
+
         var preferredOrder = new List<string> { "Icon", "A", "B", "C", "D", "Local", "Foreign" };
 
         var categoryGroups = allPlayers
@@ -39,7 +47,11 @@ public class ReportsController : Controller
             .Select(g => new CategoryGroup
             {
                 CategoryName = g.Key,
-                Players = g.OrderBy(p => p.Id).ToList()
+                Players = g.OrderBy(p => p.Id).Select(p => new CategoryPlayerItem
+                {
+                    Player = p,
+                    CurrentTeam = playerTeamMap.TryGetValue(p.Id, out var team) ? team : null
+                }).ToList()
             })
             .ToList();
 
@@ -52,7 +64,7 @@ public class ReportsController : Controller
                 categoryGroups.Add(new CategoryGroup
                 {
                     CategoryName = standardCat,
-                    Players = new List<Player>()
+                    Players = new List<CategoryPlayerItem>()
                 });
             }
         }
@@ -167,6 +179,14 @@ public class ReportsController : Controller
     {
         var settings = _settingsService.GetSettings();
         var allPlayers = await _db.Players.OrderBy(p => p.FullName).ToListAsync();
+        var soldLots = await _db.AuctionPlayers
+            .Where(ap => ap.Status == AuctionPlayerStatus.Sold && ap.TeamId.HasValue)
+            .Include(ap => ap.Team)
+            .ToListAsync();
+        var playerTeamMap = soldLots
+            .GroupBy(ap => ap.PlayerId)
+            .ToDictionary(g => g.Key, g => g.First().Team);
+
         var preferredOrder = new List<string> { "Icon", "A", "B", "C", "D", "Local", "Foreign" };
 
         var categoryGroups = allPlayers
@@ -180,7 +200,11 @@ public class ReportsController : Controller
             .Select(g => new CategoryGroup
             {
                 CategoryName = g.Key,
-                Players = g.OrderBy(p => p.Id).ToList()
+                Players = g.OrderBy(p => p.Id).Select(p => new CategoryPlayerItem
+                {
+                    Player = p,
+                    CurrentTeam = playerTeamMap.TryGetValue(p.Id, out var team) ? team : null
+                }).ToList()
             })
             .ToList();
 
@@ -191,7 +215,7 @@ public class ReportsController : Controller
                 categoryGroups.Add(new CategoryGroup
                 {
                     CategoryName = standardCat,
-                    Players = new List<Player>()
+                    Players = new List<CategoryPlayerItem>()
                 });
             }
         }
@@ -237,7 +261,7 @@ public class ReportsController : Controller
             currentRow++;
 
             // Table Header Row
-            string[] headers = ["SL", "Player Regi. No.", "Player Image", "Player Name", "Role", "Batting Style", "Bowling Style", "Mobile", "Note"];
+            string[] headers = ["SL", "Player Regi. No.", "Player Image", "Player Name", "Role", "Batting Style", "Bowling Style", "Mobile", "Current Team"];
             for (int i = 0; i < headers.Length; i++)
             {
                 var cell = ws.Cell(currentRow, i + 1);
@@ -255,8 +279,13 @@ public class ReportsController : Controller
             if (group.Players.Count > 0)
             {
                 int sl = 1;
-                foreach (var p in group.Players)
+                foreach (var item in group.Players)
                 {
+                    var p = item.Player;
+                    var teamName = item.CurrentTeam != null 
+                        ? (!string.IsNullOrEmpty(item.CurrentTeam.ShortCode) ? $"{item.CurrentTeam.Name} ({item.CurrentTeam.ShortCode})" : item.CurrentTeam.Name) 
+                        : "Unsold";
+
                     ws.Cell(currentRow, 1).Value = sl++;
                     ws.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
@@ -281,7 +310,7 @@ public class ReportsController : Controller
                     ws.Cell(currentRow, 8).Value = p.MobileNumber ?? "-";
                     ws.Cell(currentRow, 8).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                    ws.Cell(currentRow, 9).Value = "";
+                    ws.Cell(currentRow, 9).Value = teamName;
                     ws.Cell(currentRow, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                     for (int c = 1; c <= 9; c++)
