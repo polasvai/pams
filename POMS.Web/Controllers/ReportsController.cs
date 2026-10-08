@@ -75,7 +75,7 @@ public class ReportsController : Controller
         return View(viewModel);
     }
 
-    // 2. Team Details Report (Select Team first)
+    // 2. Team Details Report (Select Team first or ALL Teams)
     public async Task<IActionResult> TeamDetails(int? teamId)
     {
         var settings = _settingsService.GetSettings();
@@ -83,8 +83,35 @@ public class ReportsController : Controller
 
         Team? selectedTeam = null;
         List<Player> teamPlayers = new();
+        List<TeamGroupReport> allTeamGroups = new();
+        bool isAllTeams = teamId == -1;
 
-        if (teamId.HasValue && teamId.Value > 0)
+        if (isAllTeams)
+        {
+            // Load all teams and their acquired players
+            var allAuctionPlayers = await _db.AuctionPlayers
+                .Where(ap => ap.TeamId.HasValue)
+                .Include(ap => ap.Player)
+                .OrderBy(ap => ap.LotNumber)
+                .ThenBy(ap => ap.Player.FullName)
+                .ToListAsync();
+
+            foreach (var team in allTeams)
+            {
+                var players = allAuctionPlayers
+                    .Where(ap => ap.TeamId == team.Id)
+                    .Select(ap => ap.Player)
+                    .DistinctBy(p => p.Id)
+                    .ToList();
+
+                allTeamGroups.Add(new TeamGroupReport
+                {
+                    Team = team,
+                    Players = players
+                });
+            }
+        }
+        else if (teamId.HasValue && teamId.Value > 0)
         {
             selectedTeam = allTeams.FirstOrDefault(t => t.Id == teamId.Value) 
                 ?? await _db.Teams.FirstOrDefaultAsync(t => t.Id == teamId.Value);
@@ -97,7 +124,7 @@ public class ReportsController : Controller
                     .OrderBy(ap => ap.LotNumber)
                     .ThenBy(ap => ap.Player.FullName)
                     .Select(ap => ap.Player)
-                    .Distinct()
+                    .DistinctBy(p => p.Id)
                     .ToListAsync();
             }
         }
@@ -107,8 +134,10 @@ public class ReportsController : Controller
             Settings = settings,
             AllTeams = allTeams,
             SelectedTeamId = teamId,
+            IsAllTeams = isAllTeams,
             SelectedTeam = selectedTeam,
-            TeamPlayers = teamPlayers
+            TeamPlayers = teamPlayers,
+            AllTeamGroups = allTeamGroups
         };
 
         return View(viewModel);
@@ -281,35 +310,66 @@ public class ReportsController : Controller
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "BCL_Player_Category_List_2026.xlsx");
     }
 
-    // Export Team Details to Excel
+    // Export Team Details to Excel (Single Team or ALL Teams)
     public async Task<IActionResult> ExportTeamDetailsExcel(int? teamId)
     {
-        if (!teamId.HasValue || teamId.Value <= 0)
+        if (!teamId.HasValue || (teamId.Value <= 0 && teamId.Value != -1))
         {
             return RedirectToAction(nameof(TeamDetails));
         }
 
-        var team = await _db.Teams.FirstOrDefaultAsync(t => t.Id == teamId.Value);
-        if (team == null) return NotFound("Team not found.");
+        var isAllTeams = teamId.Value == -1;
+        var allTeams = await _db.Teams.OrderBy(t => t.Name).ToListAsync();
 
-        var teamPlayers = await _db.AuctionPlayers
-            .Where(ap => ap.TeamId == team.Id)
-            .Include(ap => ap.Player)
-            .OrderBy(ap => ap.LotNumber)
-            .ThenBy(ap => ap.Player.FullName)
-            .Select(ap => ap.Player)
-            .Distinct()
-            .ToListAsync();
+        List<TeamGroupReport> groupsToExport = new();
+
+        if (isAllTeams)
+        {
+            var allAuctionPlayers = await _db.AuctionPlayers
+                .Where(ap => ap.TeamId.HasValue)
+                .Include(ap => ap.Player)
+                .OrderBy(ap => ap.LotNumber)
+                .ThenBy(ap => ap.Player.FullName)
+                .ToListAsync();
+
+            foreach (var t in allTeams)
+            {
+                var players = allAuctionPlayers
+                    .Where(ap => ap.TeamId == t.Id)
+                    .Select(ap => ap.Player)
+                    .DistinctBy(p => p.Id)
+                    .ToList();
+
+                groupsToExport.Add(new TeamGroupReport { Team = t, Players = players });
+            }
+        }
+        else
+        {
+            var team = allTeams.FirstOrDefault(t => t.Id == teamId.Value);
+            if (team == null) return NotFound("Team not found.");
+
+            var teamPlayers = await _db.AuctionPlayers
+                .Where(ap => ap.TeamId == team.Id)
+                .Include(ap => ap.Player)
+                .OrderBy(ap => ap.LotNumber)
+                .ThenBy(ap => ap.Player.FullName)
+                .Select(ap => ap.Player)
+                .DistinctBy(p => p.Id)
+                .ToListAsync();
+
+            groupsToExport.Add(new TeamGroupReport { Team = team, Players = teamPlayers });
+        }
 
         using var workbook = new XLWorkbook();
-        var ws = workbook.Worksheets.Add("Team Player List");
+        var sheetName = isAllTeams ? "All Teams Player List" : "Team Player List";
+        var ws = workbook.Worksheets.Add(sheetName);
         ws.ShowGridLines = true;
 
         int currentRow = 2;
 
         // Top Header Box: BCL Team Player List 2026, Session 14
         var titleRange = ws.Range(currentRow, 1, currentRow, 12);
-        titleRange.Merge().Value = "BCL Team Player List 2026, Session 14";
+        titleRange.Merge().Value = isAllTeams ? "BCL All Teams Player List 2026, Session 14" : "BCL Team Player List 2026, Session 14";
         titleRange.Style.Font.Bold = true;
         titleRange.Style.Font.FontSize = 14;
         titleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
@@ -318,100 +378,109 @@ public class ReportsController : Controller
         ws.Row(currentRow).Height = 30;
         currentRow += 2;
 
-        // Team Name Header Box
-        var teamNameRange = ws.Range(currentRow, 1, currentRow, 12);
-        teamNameRange.Merge().Value = $"Team Name: {team.Name} ({team.ShortCode})";
-        teamNameRange.Style.Font.Bold = true;
-        teamNameRange.Style.Font.FontSize = 12;
-        teamNameRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-        teamNameRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-        teamNameRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F4F7");
-        teamNameRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-        ws.Row(currentRow).Height = 24;
-        currentRow++;
-
-        // Table Header Row: SL | Player Regi. No. | Player Image | Player Name | Role | Batting Style | Bowling Style | Mobile | Jersey Name | Jersey Size | Jersey Number | Note
-        string[] headers = [
-            "SL", "Player Regi. No.", "Player Image", "Player Name", "Role",
-            "Batting Style", "Bowling Style", "Mobile", "Jersey Name", "Jersey Size", "Jersey Number", "Note"
-        ];
-
-        for (int i = 0; i < headers.Length; i++)
+        foreach (var group in groupsToExport)
         {
-            var cell = ws.Cell(currentRow, i + 1);
-            cell.Value = headers[i];
-            cell.Style.Font.Bold = true;
-            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-            cell.Style.Fill.BackgroundColor = XLColor.White;
-        }
-        ws.Row(currentRow).Height = 22;
-        currentRow++;
+            var team = group.Team;
+            var teamPlayers = group.Players;
 
-        if (teamPlayers.Count > 0)
-        {
-            int sl = 1;
-            foreach (var p in teamPlayers)
+            // Team Name Header Box
+            var teamNameRange = ws.Range(currentRow, 1, currentRow, 12);
+            teamNameRange.Merge().Value = $"Team Name: {team.Name} ({team.ShortCode})";
+            teamNameRange.Style.Font.Bold = true;
+            teamNameRange.Style.Font.FontSize = 12;
+            teamNameRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            teamNameRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+            teamNameRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F4F7");
+            teamNameRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            ws.Row(currentRow).Height = 24;
+            currentRow++;
+
+            // Table Header Row: SL | Player Regi. No. | Player Image | Player Name | Role | Batting Style | Bowling Style | Mobile | Jersey Name | Jersey Size | Jersey Number | Note
+            string[] headers = [
+                "SL", "Player Regi. No.", "Player Image", "Player Name", "Role",
+                "Batting Style", "Bowling Style", "Mobile", "Jersey Name", "Jersey Size", "Jersey Number", "Note"
+            ];
+
+            for (int i = 0; i < headers.Length; i++)
             {
-                ws.Cell(currentRow, 1).Value = sl++;
-                ws.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 2).Value = p.Id.ToString();
-                ws.Cell(currentRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 3).Value = !string.IsNullOrEmpty(p.ProfilePictureUrl) ? "[Photo]" : "-";
-                ws.Cell(currentRow, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 4).Value = p.FullName;
-                ws.Cell(currentRow, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
-
-                ws.Cell(currentRow, 5).Value = p.Role.ToString();
-                ws.Cell(currentRow, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 6).Value = p.BattingStyle ?? "-";
-                ws.Cell(currentRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 7).Value = p.BowlingStyle ?? "-";
-                ws.Cell(currentRow, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 8).Value = p.MobileNumber ?? "-";
-                ws.Cell(currentRow, 8).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 9).Value = p.JerseyName ?? "-";
-                ws.Cell(currentRow, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 10).Value = p.JerseySize ?? "-";
-                ws.Cell(currentRow, 10).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 11).Value = p.JerseyNumber ?? "-";
-                ws.Cell(currentRow, 11).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                ws.Cell(currentRow, 12).Value = "";
-                ws.Cell(currentRow, 12).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                for (int c = 1; c <= 12; c++)
-                {
-                    ws.Cell(currentRow, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                }
-                ws.Row(currentRow).Height = 20;
-                currentRow++;
+                var cell = ws.Cell(currentRow, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                cell.Style.Fill.BackgroundColor = XLColor.White;
             }
-        }
-        else
-        {
-            // If team currently has no players assigned, output 3 blank rows matching the screenshot template
-            for (int emptyRow = 1; emptyRow <= 3; emptyRow++)
+            ws.Row(currentRow).Height = 22;
+            currentRow++;
+
+            if (teamPlayers.Count > 0)
             {
-                ws.Cell(currentRow, 1).Value = emptyRow;
-                ws.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                for (int c = 1; c <= 12; c++)
+                int sl = 1;
+                foreach (var p in teamPlayers)
                 {
-                    ws.Cell(currentRow, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    ws.Cell(currentRow, 1).Value = sl++;
+                    ws.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 2).Value = p.Id.ToString();
+                    ws.Cell(currentRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 3).Value = !string.IsNullOrEmpty(p.ProfilePictureUrl) ? "[Photo]" : "-";
+                    ws.Cell(currentRow, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 4).Value = p.FullName;
+                    ws.Cell(currentRow, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+
+                    ws.Cell(currentRow, 5).Value = p.Role.ToString();
+                    ws.Cell(currentRow, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 6).Value = p.BattingStyle ?? "-";
+                    ws.Cell(currentRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 7).Value = p.BowlingStyle ?? "-";
+                    ws.Cell(currentRow, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 8).Value = p.MobileNumber ?? "-";
+                    ws.Cell(currentRow, 8).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 9).Value = p.JerseyName ?? "-";
+                    ws.Cell(currentRow, 9).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 10).Value = p.JerseySize ?? "-";
+                    ws.Cell(currentRow, 10).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 11).Value = p.JerseyNumber ?? "-";
+                    ws.Cell(currentRow, 11).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(currentRow, 12).Value = "";
+                    ws.Cell(currentRow, 12).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    for (int c = 1; c <= 12; c++)
+                    {
+                        ws.Cell(currentRow, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    }
+                    ws.Row(currentRow).Height = 20;
+                    currentRow++;
                 }
-                ws.Row(currentRow).Height = 20;
-                currentRow++;
             }
+            else
+            {
+                // If team currently has no players assigned, output 3 blank rows matching the screenshot template
+                for (int emptyRow = 1; emptyRow <= 3; emptyRow++)
+                {
+                    ws.Cell(currentRow, 1).Value = emptyRow;
+                    ws.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    for (int c = 1; c <= 12; c++)
+                    {
+                        ws.Cell(currentRow, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    }
+                    ws.Row(currentRow).Height = 20;
+                    currentRow++;
+                }
+            }
+
+            // Gap between teams if all teams
+            currentRow += 2;
         }
 
         ws.Columns(1, 12).AdjustToContents(8.0, 35.0);
@@ -431,7 +500,9 @@ public class ReportsController : Controller
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
         var content = stream.ToArray();
-        var safeCode = string.IsNullOrWhiteSpace(team.ShortCode) ? team.Id.ToString() : team.ShortCode.Trim();
-        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"BCL_Team_Details_{safeCode}_2026.xlsx");
+        var downloadName = isAllTeams 
+            ? "BCL_All_Teams_Player_List_2026.xlsx" 
+            : $"BCL_Team_Details_{(groupsToExport.FirstOrDefault()?.Team.ShortCode ?? "Team")}_2026.xlsx";
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", downloadName);
     }
 }
