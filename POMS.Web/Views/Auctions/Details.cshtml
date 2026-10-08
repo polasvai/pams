@@ -59,6 +59,10 @@
                                 <th>Role</th>
                                 <th>Status</th>
                                 <th class="text-end">Sold Price</th>
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <th class="text-center">Action</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -79,6 +83,26 @@
                                     <td class="text-end font-weight-bold">
                                         @(lot.SoldPrice.HasValue ? $"৳{lot.SoldPrice.Value:N0}" : "-")
                                     </td>
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <td class="text-center">
+                                            @if (lot.Status == AuctionPlayerStatus.OnAuction || lot.Status == AuctionPlayerStatus.Unsold)
+                                            {
+                                                <form asp-action="ResetPlayer" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Reset this player back to Pending lot queue?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="lotId" value="@lot.Id" />
+                                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm py-0 px-2" title="Reset player status back to Pending">
+                                                        ↩ Reset to Queue
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">-</span>
+                                            }
+                                        </td>
+                                    }
                                 </tr>
                             }
                         </tbody>

@@ -59,6 +59,42 @@ public sealed class AuctionServiceTests
         Assert.Equal(fixture.TeamA.Id, lot.TeamId);
     }
 
+    [Fact]
+    public async Task Cannot_call_another_player_when_player_is_on_auction()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        // Add a second pending lot
+        var player2 = new Player { FullName = "Second Player", BasePrice = 50000, SkillRating = 70 };
+        fixture.Db.Players.Add(player2);
+        await fixture.Db.SaveChangesAsync();
+
+        var lot2 = new AuctionPlayer { AuctionId = fixture.Auction.Id, PlayerId = player2.Id, Status = AuctionPlayerStatus.Pending, LotNumber = 2 };
+        fixture.Db.AuctionPlayers.Add(lot2);
+        await fixture.Db.SaveChangesAsync();
+
+        // fixture.Lot is already OnAuction
+        var result = await fixture.Service.SelectPlayerAsync(fixture.Auction.Id, lot2.Id);
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("already on the auction block", result.Message);
+    }
+
+    [Fact]
+    public async Task Can_reset_on_auction_player_to_pending()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        // fixture.Lot is currently OnAuction
+        var result = await fixture.Service.ResetPlayerToPendingAsync(fixture.Auction.Id, fixture.Lot.Id);
+
+        Assert.True(result.Succeeded);
+        var lot = await fixture.Db.AuctionPlayers.FindAsync(fixture.Lot.Id);
+        Assert.NotNull(lot);
+        Assert.Equal(AuctionPlayerStatus.Pending, lot.Status);
+        var auction = await fixture.Db.Auctions.FindAsync(fixture.Auction.Id);
+        Assert.Null(auction!.CurrentAuctionPlayerId);
+    }
+
+
     private sealed class Fixture : IAsyncDisposable
     {
         private readonly SqliteConnection connection;

@@ -301,11 +301,21 @@ else
 
                     @if (User.Identity?.IsAuthenticated == true && Model.Status == AuctionStatus.Live)
                     {
+                        @if (current != null)
+                        {
+                            <div class="alert alert-warning py-2 px-3 mb-3 small d-flex align-items-center gap-2">
+                                <span>⚠️</span>
+                                <div>
+                                    <strong>Player On Auction Block:</strong> Calling new players is locked until <strong>@current.Player.FullName</strong> is Sold or marked Unsold.
+                                </div>
+                            </div>
+                        }
+
                         <!-- Quick Call Dropdown by Category for Operator -->
                         <form asp-action="SelectPlayer" asp-route-id="@Model.Id" method="post" class="mb-3" id="quickSelectForm">
                             <div class="input-group input-group-sm">
-                                <select name="lotId" id="queueSelectDropdown" class="form-select form-select-sm" required>
-                                    <option value="">-- Select Next Player --</option>
+                                <select name="lotId" id="queueSelectDropdown" class="form-select form-select-sm" required @(current != null ? "disabled" : "")>
+                                    <option value="">-- @(current != null ? "Lot in progress - finish first" : "Select Next Player") --</option>
                                     @foreach (var group in categorizedPending)
                                     {
                                         <optgroup label="@group.Key Category (@group.Count())" class="queue-optgroup" data-cat="@group.Key.ToLowerInvariant()">
@@ -318,7 +328,7 @@ else
                                         </optgroup>
                                     }
                                 </select>
-                                <button class="btn btn-primary btn-sm fw-bold px-3" type="submit" title="Bring selected player to the auction block">
+                                <button class="btn btn-primary btn-sm fw-bold px-3" type="submit" @(current != null ? "disabled" : "") title="@(current != null ? "A player is currently on auction. Finish this lot first." : "Bring selected player to the auction block")">
                                     📢 Call
                                 </button>
                             </div>
@@ -369,7 +379,7 @@ else
                                                 {
                                                     <form asp-action="SelectPlayer" asp-route-id="@Model.Id" method="post" class="m-0 flex-shrink-0">
                                                         <input type="hidden" name="lotId" value="@lot.Id" />
-                                                        <button type="submit" class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem;" title="Bring to auction block">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm py-0 px-2 fw-bold" style="font-size: 0.75rem;" @(current != null ? "disabled" : "") title="@(current != null ? "Finish current lot before calling another player" : "Bring to auction block")">
                                                             📢 Call
                                                         </button>
                                                     </form>

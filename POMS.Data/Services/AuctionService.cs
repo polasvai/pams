@@ -47,6 +47,14 @@ public sealed class AuctionService(ApplicationDbContext db)
             return Fail("Auction was not found.");
         if (auction.Status != AuctionStatus.Live)
             return Fail("The auction must be live.");
+
+        // Check if there is already a player currently on auction (either referenced by CurrentAuctionPlayerId or having OnAuction status)
+        var currentlyOnAuction = auction.AuctionPlayers.FirstOrDefault(x => x.Status == AuctionPlayerStatus.OnAuction || x.Id == auction.CurrentAuctionPlayerId);
+        if (currentlyOnAuction is not null)
+        {
+            return Fail("A player is already on the auction block. Please finish the current lot (Sold or Unsold) before calling another player.");
+        }
+
         var next = auction.AuctionPlayers.FirstOrDefault(x => x.Id == lotId);
         if (next is null || next.Status != AuctionPlayerStatus.Pending)
             return Fail("Select a pending player.");
@@ -196,6 +204,44 @@ public sealed class AuctionService(ApplicationDbContext db)
         await tx.CommitAsync(ct);
 
         return Ok($"Player {playerName} was removed from the team and reset to pending auction queue.");
+    }
+
+    public async Task<AuctionServiceResult> ResetPlayerToPendingAsync(int auctionId, int lotId, CancellationToken ct = default)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var lot = await db.AuctionPlayers
+            .Include(x => x.Player)
+            .Include(x => x.Auction)
+            .Include(x => x.Bids)
+            .FirstOrDefaultAsync(x => x.Id == lotId && x.AuctionId == auctionId, ct);
+
+        if (lot is null)
+            return Fail("Auction lot not found.");
+
+        if (lot.Status == AuctionPlayerStatus.Sold)
+            return Fail("Sold players should be removed from their team rather than reset.");
+
+        var playerName = lot.Player.FullName;
+
+        // If this player was currently on the auction block, clear the auction's CurrentAuctionPlayerId
+        if (lot.Auction?.CurrentAuctionPlayerId == lot.Id)
+        {
+            lot.Auction.CurrentAuctionPlayerId = null;
+        }
+
+        lot.Status = AuctionPlayerStatus.Pending;
+        lot.TeamId = null;
+        lot.SoldPrice = null;
+
+        if (lot.Bids.Any())
+        {
+            db.Bids.RemoveRange(lot.Bids);
+        }
+
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+
+        return Ok($"Player {playerName} lot #{lot.LotNumber} was reset to pending queue.");
     }
 
     private static AuctionServiceResult Ok(string message) => new(true, message);

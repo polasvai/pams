@@ -212,4 +212,17 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
             id
         });
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPlayer(int id, int lotId, string? returnUrl, CancellationToken ct)
+    {
+        var result = await auctionService.ResetPlayerToPendingAsync(id, lotId, ct);
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Message;
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+        return RedirectToAction(nameof(Details), new { id });
+    }
 }
