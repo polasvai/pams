@@ -44,100 +44,103 @@
         </div>
 
         <!-- Category Tables -->
-        <div class="table-responsive">
-            <table class="report-table w-100">
-                @foreach (var group in Model.CategoryGroups)
-                {
-                    <!-- Category Header -->
-                    <thead>
-                        <tr class="category-header-row">
-                            <th colspan="9" class="category-header-cell">
-                                @group.DisplayTitle
-                            </th>
-                        </tr>
-                        <tr class="column-header-row">
-                            <th style="width: 3%;">SL</th>
-                            <th style="width: 4%;">Reg. No</th>
-                            <th style="width: 10%;">Image</th>
-                            <th style="width: 21%;">Player Name</th>
-                            <th style="width: 11%;">Role</th>
-                            <th style="width: 10%;">Batting</th>
-                            <th style="width: 10%;">Bowling</th>
-                            <th style="width: 13%;">Mobile</th>
-                            <th style="width: 18%;">Current Team</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (group.Players.Count > 0)
-                        {
-                            int sl = 1;
-                            @foreach (var item in group.Players)
-                            {
-                                var player = item.Player;
-                                var currentTeam = item.CurrentTeam;
-                                <tr>
-                                    <td class="text-center font-monospace sl-cell">@sl</td>
-                                    <td class="text-center font-monospace regi-cell">@player.Id</td>
-                                    <td class="text-center py-1">
-                                        @if (!string.IsNullOrEmpty(player.ProfilePictureUrl))
-                                        {
-                                            <img src="@player.ProfilePictureUrl" alt="@player.FullName" class="player-photo" />
-                                        }
-                                        else
-                                        {
-                                            <div class="photo-placeholder">👤</div>
-                                        }
-                                    </td>
-                                    <td class="text-start px-1 fw-semibold player-name-cell">@player.FullName</td>
-                                    <td class="text-center">@player.Role</td>
-                                    <td class="text-center">@(string.IsNullOrEmpty(player.BattingStyle) ? "-" : player.BattingStyle)</td>
-                                    <td class="text-center">@(string.IsNullOrEmpty(player.BowlingStyle) ? "-" : player.BowlingStyle)</td>
-                                    <td class="text-center font-monospace mobile-cell">@(string.IsNullOrEmpty(player.MobileNumber) ? "-" : player.MobileNumber)</td>
-                                    <td class="text-center team-cell px-1">
-                                        @if (currentTeam != null)
-                                        {
-                                            <div class="team-badge">
-                                                <span class="team-name">@currentTeam.Name</span>
-                                                @if (!string.IsNullOrEmpty(currentTeam.ShortCode))
+        <div class="category-tables-wrapper">
+            @{
+                int categoryIndex = 0;
+            }
+            @foreach (var group in Model.CategoryGroups)
+            {
+                categoryIndex++;
+                <div class="category-report-block mb-4 @(categoryIndex > 1 ? "category-next-block" : "")">
+                    <div class="table-responsive">
+                        <table class="report-table w-100">
+                            <thead>
+                                <tr class="category-header-row">
+                                    <th colspan="9" class="category-header-cell">
+                                        @group.DisplayTitle
+                                    </th>
+                                </tr>
+                                <tr class="column-header-row">
+                                    <th style="width: 3%;">SL</th>
+                                    <th style="width: 4%;">Reg. No</th>
+                                    <th style="width: 10%;">Image</th>
+                                    <th style="width: 21%;">Player Name</th>
+                                    <th style="width: 11%;">Role</th>
+                                    <th style="width: 10%;">Batting</th>
+                                    <th style="width: 10%;">Bowling</th>
+                                    <th style="width: 13%;">Mobile</th>
+                                    <th style="width: 18%;">Current Team</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (group.Players.Count > 0)
+                                {
+                                    int sl = 1;
+                                    @foreach (var item in group.Players)
+                                    {
+                                        var player = item.Player;
+                                        var currentTeam = item.CurrentTeam;
+                                        <tr class="player-data-row">
+                                            <td class="text-center font-monospace sl-cell">@sl</td>
+                                            <td class="text-center font-monospace regi-cell">@player.Id</td>
+                                            <td class="text-center py-1">
+                                                @if (!string.IsNullOrEmpty(player.ProfilePictureUrl))
                                                 {
-                                                    <span class="team-code">(@currentTeam.ShortCode)</span>
+                                                    <img src="@player.ProfilePictureUrl" alt="@player.FullName" class="player-photo" />
                                                 }
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="unsold-text">Unsold</span>
-                                        }
-                                    </td>
-                                </tr>
-                                sl++;
-                            }
-                        }
-                        else
-                        {
-                            <!-- Blank template rows if no players in category -->
-                            for (int i = 1; i <= 3; i++)
-                            {
-                                <tr class="empty-row">
-                                    <td class="text-center">@i</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                            }
-                        }
-                        <!-- Spacer between categories -->
-                        <tr class="category-spacer-row">
-                            <td colspan="9" style="border: none; height: 16px;"></td>
-                        </tr>
-                    </tbody>
-                }
-            </table>
+                                                else
+                                                {
+                                                    <div class="photo-placeholder">👤</div>
+                                                }
+                                            </td>
+                                            <td class="text-start px-1 fw-semibold player-name-cell">@player.FullName</td>
+                                            <td class="text-center">@player.Role</td>
+                                            <td class="text-center">@(string.IsNullOrEmpty(player.BattingStyle) ? "-" : player.BattingStyle)</td>
+                                            <td class="text-center">@(string.IsNullOrEmpty(player.BowlingStyle) ? "-" : player.BowlingStyle)</td>
+                                            <td class="text-center font-monospace mobile-cell">@(string.IsNullOrEmpty(player.MobileNumber) ? "-" : player.MobileNumber)</td>
+                                            <td class="text-center team-cell px-1">
+                                                @if (currentTeam != null)
+                                                {
+                                                    <div class="team-badge">
+                                                        <span class="team-name">@currentTeam.Name</span>
+                                                        @if (!string.IsNullOrEmpty(currentTeam.ShortCode))
+                                                        {
+                                                            <span class="team-code">(@currentTeam.ShortCode)</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="unsold-text">Unsold</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        sl++;
+                                    }
+                                }
+                                else
+                                {
+                                    <!-- Blank template rows if no players in category -->
+                                    for (int i = 1; i <= 3; i++)
+                                    {
+                                        <tr class="empty-row">
+                                            <td class="text-center">@i</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -250,27 +253,32 @@
     }
 
     .team-badge {
-        display: inline-block;
-        padding: 2px 4px;
+        display: block;
+        width: 95%;
+        margin: 0 auto;
+        padding: 3px 2px;
         background-color: #e8f5e9;
         border: 1px solid #81c784;
         border-radius: 3px;
-        color: #1b5e20;
-        font-size: 0.70rem;
+        color: #0b4f17 !important;
+        font-size: 0.72rem;
         font-weight: 700;
-        max-width: 100%;
+        text-align: center;
+        line-height: 1.2;
         box-sizing: border-box;
     }
 
     .team-name {
         display: block;
+        color: #0b4f17 !important;
         line-height: 1.15;
+        font-weight: 700;
     }
 
     .team-code {
         display: block;
         font-size: 0.65rem;
-        color: #2e7d32;
+        color: #1b5e20 !important;
         font-weight: 600;
         margin-top: 1px;
     }
@@ -281,8 +289,30 @@
         background-color: #f5f5f5;
         border: 1px solid #d6d6d6;
         border-radius: 3px;
-        color: #757575;
+        color: #616161 !important;
         font-size: 0.70rem;
+        font-weight: 600;
+    }
+
+    /* Page break protections for tables & rows */
+    .category-report-block {
+        page-break-inside: auto;
+    }
+
+    .category-next-block {
+        page-break-before: auto;
+    }
+
+    tr, .player-data-row {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .category-header-row, .column-header-row {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
     }
 
     /* Print media optimization */
@@ -314,8 +344,9 @@
             display: table-header-group;
         }
 
-        tr {
-            page-break-inside: avoid;
+        tr, .player-data-row {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
 
         @@page {
@@ -336,12 +367,12 @@
 
             const element = document.getElementById('reportContainer');
             const opt = {
-                margin: [5, 5, 5, 5],
+                margin: [6, 6, 6, 6],
                 filename: 'BCL_Player_Category_List_2026.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] }
+                pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.player-data-row', '.category-header-row', '.column-header-row'] }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
