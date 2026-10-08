@@ -148,6 +148,43 @@ public sealed class AuctionService(ApplicationDbContext db)
         return Ok($"Player {lot.Player.FullName} sold to {team.Name} for ৳{amount:N0}.");
     }
 
+    public async Task<AuctionServiceResult> RemovePlayerFromTeamAsync(int teamId, int auctionPlayerId, CancellationToken ct = default)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var lot = await db.AuctionPlayers
+            .Include(x => x.Player)
+            .Include(x => x.Auction)
+            .Include(x => x.Bids)
+            .FirstOrDefaultAsync(x => x.Id == auctionPlayerId && x.TeamId == teamId, ct);
+
+        if (lot is null)
+            return Fail("Player not found in this team's roster.");
+
+        var playerName = lot.Player.FullName;
+
+        // If this player was currently on the auction block, clear it
+        if (lot.Auction?.CurrentAuctionPlayerId == lot.Id)
+        {
+            lot.Auction.CurrentAuctionPlayerId = null;
+        }
+
+        // Reset player status to Pending so they can be re-auctioned
+        lot.Status = AuctionPlayerStatus.Pending;
+        lot.TeamId = null;
+        lot.SoldPrice = null;
+
+        // Remove bids associated with this lot so previous team bids don't persist
+        if (lot.Bids.Any())
+        {
+            db.Bids.RemoveRange(lot.Bids);
+        }
+
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+
+        return Ok($"Player {playerName} was removed from the team and reset to pending auction queue.");
+    }
+
     private static AuctionServiceResult Ok(string message) => new(true, message);
     private static AuctionServiceResult Fail(string message) => new(false, message);
 }

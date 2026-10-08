@@ -22,6 +22,21 @@
     </div>
 </div>
 
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✓ @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        ⚠️ @error
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="row g-4">
     <!-- Team Stats Summary -->
     <div class="col-md-4">
@@ -80,6 +95,10 @@
                                 <th>Role</th>
                                 <th>Auction Event</th>
                                 <th class="text-end">Winning Price</th>
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <th class="text-center" style="width: 140px;">Action</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -87,14 +106,36 @@
                             {
                                 <tr>
                                     <td>
-                                        <strong class="d-block text-dark">@(lot.Player?.FullName ?? "Unknown")</strong>
-                                        <small class="text-muted">Skill Rating: @lot.Player?.SkillRating/100</small>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if (!string.IsNullOrEmpty(lot.Player?.ProfilePictureUrl))
+                                            {
+                                                <img src="@lot.Player.ProfilePictureUrl" alt="@lot.Player.FullName" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;" />
+                                            }
+                                            <div>
+                                                <strong class="d-block text-dark">@(lot.Player?.FullName ?? "Unknown")</strong>
+                                                <small class="text-muted">
+                                                    @(string.IsNullOrWhiteSpace(lot.Player?.Category) ? "" : $"Cat: {lot.Player.Category} · ")Rating: @(lot.Player?.SkillRating)/100
+                                                </small>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td><span class="badge bg-light text-dark border">@lot.Player?.Role</span></td>
                                     <td>@(lot.Auction?.Name ?? "Auction")</td>
                                     <td class="text-end font-weight-bold text-success">
                                         ৳@(lot.SoldPrice?.ToString("N0") ?? "-")
                                     </td>
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <td class="text-center">
+                                            <form asp-action="RemovePlayer" method="post" onsubmit="return confirm('Are you sure you want to remove @lot.Player?.FullName from this team? They will be returned to the pending auction queue so they can be re-assigned.');">
+                                                <input type="hidden" name="teamId" value="@Model.Id" />
+                                                <input type="hidden" name="auctionPlayerId" value="@lot.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 fw-bold" title="Remove from team and return to auction queue">
+                                                    🗑️ Remove
+                                                </button>
+                                            </form>
+                                        </td>
+                                    }
                                 </tr>
                             }
                         </tbody>

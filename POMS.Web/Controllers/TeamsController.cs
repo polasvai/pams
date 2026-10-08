@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using POMS.Data;
 using POMS.Data.Models;
 
+using POMS.Data.Services;
+
 namespace POMS.Web.Controllers;
 
 [Authorize]
-public class TeamsController(ApplicationDbContext db) : Controller
+public class TeamsController(ApplicationDbContext db, AuctionService auctionService) : Controller
 {
     [AllowAnonymous]
     public async Task<IActionResult> Index()
@@ -110,5 +112,14 @@ public class TeamsController(ApplicationDbContext db) : Controller
             .FirstOrDefaultAsync(t => t.Id == id);
 
         return team is null ? NotFound() : View(team);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemovePlayer(int teamId, int auctionPlayerId, CancellationToken ct)
+    {
+        var result = await auctionService.RemovePlayerFromTeamAsync(teamId, auctionPlayerId, ct);
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(Details), new { id = teamId });
     }
 }
