@@ -9,6 +9,7 @@ using POMS.Web.Services;
 
 namespace POMS.Web.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class ReportsController : Controller
 {
     private readonly ApplicationDbContext _db;
