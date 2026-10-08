@@ -112,20 +112,20 @@
                                             @team.Name (@team.ShortCode)
                                         </th>
                                     </tr>
-                                    <!-- Column Headers: SL | Player Regi. No. | Player Image | Player Name | Role | Batting Style | Bowling Style | Mobile | Jersey Name | Jersey Size | Jersey Number | Note -->
+                                    <!-- Column Headers: SL | Reg. No | Image | Player Name | Role | Batting | Bowling | Mobile | Jersey Name | Size | No | Note -->
                                     <tr class="column-header-row">
                                         <th style="width: 4%;">SL</th>
-                                        <th style="width: 5%;">Player Regi. No.</th>
-                                        <th style="width: 9%;">Player Image</th>
+                                        <th style="width: 6%;">Reg. No</th>
+                                        <th style="width: 9%;">Image</th>
                                         <th style="width: 17%;">Player Name</th>
                                         <th style="width: 10%;">Role</th>
-                                        <th style="width: 9%;">Batting Style</th>
-                                        <th style="width: 9%;">Bowling Style</th>
-                                        <th style="width: 10%;">Mobile</th>
-                                        <th style="width: 8%;">Jersey Name</th>
-                                        <th style="width: 5%;">Jersey Size</th>
-                                        <th style="width: 5%;">Jersey Number</th>
-                                        <th style="width: 9%;">Note</th>
+                                        <th style="width: 9%;">Batting</th>
+                                        <th style="width: 9%;">Bowling</th>
+                                        <th style="width: 12%;">Mobile</th>
+                                        <th style="width: 9%;">Jersey</th>
+                                        <th style="width: 5%;">Size</th>
+                                        <th style="width: 4%;">No.</th>
+                                        <th style="width: 6%;">Note</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -190,20 +190,20 @@
                                     @selectedTeam.Name
                                 </th>
                             </tr>
-                            <!-- Column Headers: SL | Player Regi. No. | Player Image | Player Name | Role | Batting Style | Bowling Style | Mobile | Jersey Name | Jersey Size | Jersey Number | Note -->
+                            <!-- Column Headers: SL | Reg. No | Image | Player Name | Role | Batting | Bowling | Mobile | Jersey Name | Size | No | Note -->
                             <tr class="column-header-row">
                                 <th style="width: 4%;">SL</th>
-                                <th style="width: 10%;">Player Regi. No.</th>
-                                <th style="width: 9%;">Player Image</th>
+                                <th style="width: 6%;">Reg. No</th>
+                                <th style="width: 9%;">Image</th>
                                 <th style="width: 17%;">Player Name</th>
                                 <th style="width: 10%;">Role</th>
-                                <th style="width: 9%;">Batting Style</th>
-                                <th style="width: 9%;">Bowling Style</th>
-                                <th style="width: 10%;">Mobile</th>
-                                <th style="width: 8%;">Jersey Name</th>
-                                <th style="width: 5%;">Jersey Size</th>
-                                <th style="width: 5%;">Jersey Number</th>
-                                <th style="width: 10%;">Auction (Note)</th>
+                                <th style="width: 9%;">Batting</th>
+                                <th style="width: 9%;">Bowling</th>
+                                <th style="width: 12%;">Mobile</th>
+                                <th style="width: 9%;">Jersey</th>
+                                <th style="width: 5%;">Size</th>
+                                <th style="width: 4%;">No.</th>
+                                <th style="width: 6%;">Note</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -236,7 +236,7 @@
                                         <td class="text-center">@(string.IsNullOrEmpty(player.JerseySize) ? "-" : player.JerseySize)</td>
                                         <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.JerseyNumber) ? "-" : player.JerseyNumber)</td>
                                         <td class="text-center small">
-                                            @(string.IsNullOrEmpty(auctionName) ? "" : auctionName)
+                                        @*    @(string.IsNullOrEmpty(auctionName) ? "" : auctionName)     *@
                                         </td>
                                     </tr>
                                     sl++;
@@ -272,7 +272,7 @@
 <style>
     /* Official Report Styling matching reference sheet */
     .report-sheet {
-        max-width: 1200px;
+        max-width: 900px;
         background: #fff;
         border: 1px solid #dee2e6;
         font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
@@ -281,8 +281,8 @@
     .report-title-box {
         display: inline-block;
         border: 2px solid #000;
-        padding: 8px 32px;
-        font-size: 1.15rem;
+        padding: 6px 28px;
+        font-size: 1.05rem;
         font-weight: bold;
         color: #000;
         letter-spacing: 0.5px;
@@ -292,24 +292,27 @@
     .report-table {
         border-collapse: collapse;
         border: 2px solid #000;
-        font-size: 0.82rem;
+        font-size: 0.72rem;
         color: #000;
         background: #fff;
+        table-layout: fixed;
     }
 
     .report-table th,
     .report-table td {
         border: 1px solid #000;
-        padding: 6px 4px;
+        padding: 4px 2px;
         vertical-align: middle;
+        overflow-wrap: break-word;
+        word-break: normal;
     }
 
     .team-header-row th {
         background-color: #f7f7f7;
-        font-size: 1rem;
+        font-size: 0.92rem;
         font-weight: bold;
         text-align: center;
-        padding: 8px;
+        padding: 6px;
         border: 1px solid #000;
         border-top: 2px solid #000;
     }
@@ -318,40 +321,40 @@
         background-color: #fff;
         font-weight: bold;
         text-align: center;
-        padding: 6px 3px;
+        padding: 4px 2px;
         border: 1px solid #000;
-        font-size: 0.8rem;
+        font-size: 0.70rem;
     }
 
     .player-photo {
         width: 100%;
-        height: 90px;
+        height: 60px;
         object-fit: cover;
-        border-radius: 4px;
+        border-radius: 3px;
         border: 1px solid #888;
         display: inline-block;
     }
 
     .photo-placeholder {
         width: 100%;
-        height: 90px;
-        line-height: 34px;
+        height: 60px;
+        line-height: 28px;
         text-align: center;
         background: #eee;
-        border-radius: 4px;
+        border-radius: 3px;
         display: inline-block;
-        font-size: 16px;
+        font-size: 14px;
     }
 
     .empty-row td {
-        height: 36px;
+        height: 28px;
     }
 
     /* Print media optimization */
     @@media print {
         body {
             background: #fff !important;
-            font-size: 10pt !important;
+            font-size: 9pt !important;
         }
 
         .site-nav,
@@ -386,8 +389,8 @@
         }
 
         @@page {
-            size: A4 landscape;
-            margin: 8mm 6mm;
+            size: A4 portrait;
+            margin: 6mm 5mm;
         }
     }
 </style>
@@ -409,11 +412,11 @@
 
                 const element = document.getElementById('reportContainer');
                 const opt = {
-                    margin: [6, 6, 6, 6],
+                    margin: [5, 5, 5, 5],
                     filename: '@pdfFileName',
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2, useCORS: true, logging: false },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak: { mode: ['css', 'legacy'] }
                 };
 

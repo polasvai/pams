@@ -57,14 +57,14 @@
                         </tr>
                         <tr class="column-header-row">
                             <th style="width: 4%;">SL</th>
-                            <th style="width: 6%;">Player Regi. No.</th>
-                            <th style="width: 10%;">Player Image</th>
-                            <th style="width: 20%;">Player Name</th>
+                            <th style="width: 6%;">Reg. No</th>
+                            <th style="width: 10%;">Image</th>
+                            <th style="width: 18%;">Player Name</th>
                             <th style="width: 11%;">Role</th>
-                            <th style="width: 9%;">Batting Style</th>
-                            <th style="width: 9%;">Bowling Style</th>
-                            <th style="width: 12%;">Mobile</th>
-                            <th style="width: 19%;">Current Team</th>
+                            <th style="width: 10%;">Batting</th>
+                            <th style="width: 10%;">Bowling</th>
+                            <th style="width: 13%;">Mobile</th>
+                            <th style="width: 18%;">Current Team</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -76,7 +76,7 @@
                                 var player = item.Player;
                                 var currentTeam = item.CurrentTeam;
                                 <tr>
-                                    <td class="text-center">@sl</td>
+                                    <td class="text-center font-monospace">@sl</td>
                                     <td class="text-center font-monospace">@player.Id</td>
                                     <td class="text-center py-1">
                                         @if (!string.IsNullOrEmpty(player.ProfilePictureUrl))
@@ -88,11 +88,11 @@
                                             <div class="photo-placeholder">👤</div>
                                         }
                                     </td>
-                                    <td class="text-start px-2 fw-semibold">@player.FullName</td>
+                                    <td class="text-start px-1 fw-semibold player-name-cell">@player.FullName</td>
                                     <td class="text-center">@player.Role</td>
                                     <td class="text-center">@(string.IsNullOrEmpty(player.BattingStyle) ? "-" : player.BattingStyle)</td>
                                     <td class="text-center">@(string.IsNullOrEmpty(player.BowlingStyle) ? "-" : player.BowlingStyle)</td>
-                                    <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.MobileNumber) ? "-" : player.MobileNumber)</td>
+                                    <td class="text-center font-monospace mobile-cell">@(string.IsNullOrEmpty(player.MobileNumber) ? "-" : player.MobileNumber)</td>
                                     <td class="text-center team-cell px-1">
                                         @if (currentTeam != null)
                                         {
@@ -145,7 +145,7 @@
 <style>
     /* Official Report Styling matching reference sheet */
     .report-sheet {
-        max-width: 1200px;
+        max-width: 900px;
         background: #fff;
         border: 1px solid #dee2e6;
         font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
@@ -154,8 +154,8 @@
     .report-title-box {
         display: inline-block;
         border: 2px solid #000;
-        padding: 8px 32px;
-        font-size: 1.15rem;
+        padding: 6px 28px;
+        font-size: 1.05rem;
         font-weight: bold;
         color: #000;
         letter-spacing: 0.5px;
@@ -165,7 +165,7 @@
     .report-table {
         border-collapse: collapse;
         border: 2px solid #000;
-        font-size: 0.85rem;
+        font-size: 0.76rem;
         color: #000;
         background: #fff;
         table-layout: fixed;
@@ -174,7 +174,7 @@
     .report-table th,
     .report-table td {
         border: 1px solid #000;
-        padding: 5px 6px;
+        padding: 4px 3px;
         vertical-align: middle;
         overflow-wrap: break-word;
         word-break: normal;
@@ -182,10 +182,10 @@
 
     .category-header-row th {
         background-color: #f7f7f7;
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         font-weight: bold;
         text-align: center;
-        padding: 8px;
+        padding: 6px;
         border: 1px solid #000;
         border-top: 2px solid #000;
     }
@@ -194,32 +194,42 @@
         background-color: #fff;
         font-weight: bold;
         text-align: center;
-        padding: 6px 4px;
+        padding: 5px 2px;
         border: 1px solid #000;
+        font-size: 0.74rem;
     }
 
     .player-photo {
         width: 100%;
-        height: 80px;
+        height: 65px;
         object-fit: cover;
-        border-radius: 4px;
+        border-radius: 3px;
         border: 1px solid #888;
         display: inline-block;
     }
 
     .photo-placeholder {
         width: 100%;
-        height: 80px;
-        line-height: 36px;
+        height: 65px;
+        line-height: 30px;
         text-align: center;
         background: #eee;
-        border-radius: 4px;
+        border-radius: 3px;
         display: inline-block;
-        font-size: 18px;
+        font-size: 16px;
+    }
+
+    .player-name-cell {
+        font-size: 0.76rem;
+        line-height: 1.2;
+    }
+
+    .mobile-cell {
+        font-size: 0.70rem;
     }
 
     .empty-row td {
-        height: 32px;
+        height: 28px;
     }
 
     /* Current Team badge styling with text wrapping */
@@ -228,17 +238,17 @@
         overflow-wrap: break-word;
         white-space: normal !important;
         vertical-align: middle;
-        line-height: 1.25;
+        line-height: 1.15;
     }
 
     .team-badge {
         display: inline-block;
-        padding: 3px 6px;
+        padding: 2px 4px;
         background-color: #e8f5e9;
         border: 1px solid #81c784;
-        border-radius: 4px;
+        border-radius: 3px;
         color: #1b5e20;
-        font-size: 0.78rem;
+        font-size: 0.70rem;
         font-weight: 700;
         max-width: 100%;
         box-sizing: border-box;
@@ -246,12 +256,12 @@
 
     .team-name {
         display: block;
-        line-height: 1.2;
+        line-height: 1.15;
     }
 
     .team-code {
         display: block;
-        font-size: 0.72rem;
+        font-size: 0.65rem;
         color: #2e7d32;
         font-weight: 600;
         margin-top: 1px;
@@ -259,19 +269,19 @@
 
     .unsold-text {
         display: inline-block;
-        padding: 2px 6px;
+        padding: 2px 5px;
         background-color: #f5f5f5;
         border: 1px solid #d6d6d6;
-        border-radius: 4px;
+        border-radius: 3px;
         color: #757575;
-        font-size: 0.75rem;
+        font-size: 0.70rem;
     }
 
     /* Print media optimization */
     @@media print {
         body {
             background: #fff !important;
-            font-size: 10pt !important;
+            font-size: 9pt !important;
         }
 
         .site-nav,
@@ -301,8 +311,8 @@
         }
 
         @@page {
-            size: A4 landscape;
-            margin: 8mm 6mm;
+            size: A4 portrait;
+            margin: 6mm 5mm;
         }
     }
 </style>
@@ -318,11 +328,11 @@
 
             const element = document.getElementById('reportContainer');
             const opt = {
-                margin: [6, 6, 6, 6],
+                margin: [5, 5, 5, 5],
                 filename: 'BCL_Player_Category_List_2026.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['css', 'legacy'] }
             };
 
