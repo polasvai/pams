@@ -97,11 +97,11 @@ else
         <!-- Main Stage Column -->
         <div class="col-xl-8">
             <!-- Stage Centerpiece -->
-            <div class="lot-stage text-center">
-                <span class="stage-kicker">NOW ON THE BLOCK</span>
+            <div class="lot-stage">
                 @if (current is null)
                 {
-                    <div class="py-5">
+                    <div class="py-5 text-center">
+                        <span class="stage-kicker d-block mb-2">NOW ON THE BLOCK</span>
                         <div class="display-4 mb-2">⏳</div>
                         <h3 class="text-white-50">Waiting for Next Lot Selection</h3>
                         <p class="text-muted">Select a pending lot from the queue to start bidding.</p>
@@ -109,35 +109,72 @@ else
                 }
                 else
                 {
-                    @if (!string.IsNullOrEmpty(current.Player.ProfilePictureUrl))
-                    {
-                        <div class="mb-3 mt-3">
-                            <img src="@current.Player.ProfilePictureUrl" alt="Player Photo" class="rounded-circle border border-3 shadow-sm" style="width: 130px; height: 130px; object-fit: cover; border-color: rgba(255,255,255,0.2) !important;" />
+                    <div class="row align-items-center g-4">
+                        <!-- Left Half: Player Photo / Card -->
+                        <div class="col-md-5 text-center">
+                            <div class="position-relative d-inline-block">
+                                @if (!string.IsNullOrEmpty(current.Player.ProfilePictureUrl))
+                                {
+                                    <img src="@current.Player.ProfilePictureUrl" alt="@current.Player.FullName" class="img-fluid rounded-4 shadow-lg border border-3" style="max-height: 290px; width: 100%; max-width: 260px; object-fit: cover; border-color: rgba(255,255,255,0.25) !important;" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-4 d-flex align-items-center justify-content-center shadow-lg border border-3 mx-auto" style="width: 220px; height: 260px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2) !important;">
+                                        <span class="display-1 text-white-50">👤</span>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(current.Player.Category))
+                                {
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-warning text-dark font-weight-bold px-3 py-1 shadow-sm fs-6">
+                                            @current.Player.Category
+                                        </span>
+                                    </div>
+                                }
+                            </div>
                         </div>
-                    }
-                    <h2 class="stage-player">@current.Player.FullName</h2>
-                    <div class="d-flex justify-content-center flex-wrap gap-2 mb-3">
-                        <span class="badge bg-primary px-3 py-2">@current.Player.Role</span>
-                        <span class="badge bg-secondary px-3 py-2">Rating: @current.Player.SkillRating/100</span>
-                        @if (!string.IsNullOrEmpty(current.Player.Nationality))
-                        {
-                            <span class="badge bg-dark px-3 py-2">🌐 @current.Player.Nationality</span>
-                        }
-                    </div>
-                    <p class="text-light mb-4">
-                        Base Price: <strong class="text-warning">৳@current.Player.BasePrice.ToString("N0")</strong>
-                        @if (!string.IsNullOrEmpty(current.Player.BattingStyle)) { <span> · @current.Player.BattingStyle Bat</span> }
-                        @if (!string.IsNullOrEmpty(current.Player.BowlingStyle)) { <span> · @current.Player.BowlingStyle</span> }
-                    </p>
 
-                    <div class="highest-bid-box">
-                        <span class="text-uppercase small font-weight-bold text-light opacity-75">Highest Bid</span>
-                        <div class="highest-bid-amount">
-                            ৳@(highest?.Amount.ToString("N0") ?? current.Player.BasePrice.ToString("N0"))
+                        <!-- Right Half: Player Information & Highest Bid -->
+                        <div class="col-md-7 text-start">
+                            <span class="stage-kicker d-block mb-1">NOW ON THE BLOCK</span>
+                            <h2 class="stage-player mb-2" style="line-height: 1.15;">@current.Player.FullName</h2>
+
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-primary px-3 py-2 fs-6">@current.Player.Role</span>
+                                <span class="badge bg-secondary px-3 py-2 fs-6">Rating: @current.Player.SkillRating/100</span>
+                                @if (!string.IsNullOrEmpty(current.Player.Nationality))
+                                {
+                                    <span class="badge bg-dark px-3 py-2 fs-6">🌐 @current.Player.Nationality</span>
+                                }
+                            </div>
+
+                            <div class="text-light mb-3" style="font-size: 0.95rem;">
+                                <div class="mb-1">
+                                    Base Price: <strong class="text-warning fs-5">৳@current.Player.BasePrice.ToString("N0")</strong>
+                                </div>
+                                <div class="text-white-50">
+                                    @if (!string.IsNullOrEmpty(current.Player.BattingStyle)) { <span>🏏 @current.Player.BattingStyle Bat</span> }
+                                    @if (!string.IsNullOrEmpty(current.Player.BowlingStyle)) { <span class="ms-2">🎯 @current.Player.BowlingStyle</span> }
+                                </div>
+                                @if (!string.IsNullOrEmpty(current.Player.JerseyNumber) || !string.IsNullOrEmpty(current.Player.JerseySize))
+                                {
+                                    <div class="text-white-50 small mt-1">
+                                        @if (!string.IsNullOrEmpty(current.Player.JerseyNumber)) { <span>Jersey #: @current.Player.JerseyNumber</span> }
+                                        @if (!string.IsNullOrEmpty(current.Player.JerseySize)) { <span class="ms-2">Size: @current.Player.JerseySize</span> }
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="highest-bid-box mt-2">
+                                <span class="text-uppercase small font-weight-bold text-light opacity-75">Highest Bid</span>
+                                <div class="highest-bid-amount">
+                                    ৳@(highest?.Amount.ToString("N0") ?? current.Player.BasePrice.ToString("N0"))
+                                </div>
+                                <small class="text-light font-weight-bold">
+                                    @(highest is not null ? $"Held by {highest.Team.Name}" : "Opening Lot Price")
+                                </small>
+                            </div>
                         </div>
-                        <small class="text-light font-weight-bold">
-                            @(highest is not null ? $"Held by {highest.Team.Name}" : "Opening Lot Price")
-                        </small>
                     </div>
                 }
             </div>
