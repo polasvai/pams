@@ -1,0 +1,330 @@
+@model POMS.Web.Models.TeamDetailsReportViewModel
+@{
+    ViewData["Title"] = "Team Details Report";
+    var settings = Model.Settings;
+    var selectedTeam = Model.SelectedTeam;
+}
+
+<div class="container-fluid py-4">
+    <!-- Non-printable Toolbar with Team Selection -->
+    <div class="d-print-none card p-4 shadow-sm mb-4 border-0 rounded-4">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-5">
+                <span class="eyebrow text-primary">Reports & Analytics</span>
+                <h1 class="h3 font-weight-bold mb-1">Team Details Report</h1>
+                <p class="text-muted small mb-0">Select a team to view and export the roster with jersey numbers and player details.</p>
+            </div>
+            
+            <div class="col-lg-4">
+                <form method="get" asp-action="TeamDetails" id="teamForm">
+                    <label class="form-label font-weight-bold small text-uppercase text-muted">Select Team Name First</label>
+                    <select name="teamId" id="teamSelect" class="form-select form-select-lg shadow-sm border-primary" onchange="document.getElementById('teamForm').submit()">
+                        <option value="">-- Select Team Name --</option>
+                        @foreach (var team in Model.AllTeams)
+                        {
+                            <!option value="@team.Id" @(Model.SelectedTeamId == team.Id ? "selected" : "")>
+                                @team.Name (@team.ShortCode)
+                            </!option>
+                        }
+                    </select>
+                </form>
+            </div>
+
+            <div class="col-lg-3 text-lg-end">
+                @if (selectedTeam != null)
+                {
+                    <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                        <a class="btn btn-success fw-bold d-flex align-items-center gap-1" asp-action="ExportTeamDetailsExcel" asp-route-teamId="@selectedTeam.Id">
+                            <span>📊</span> Excel
+                        </a>
+                        <button type="button" class="btn btn-danger fw-bold d-flex align-items-center gap-1" id="btnExportPdf" onclick="exportToPdf()">
+                            <span>📥</span> PDF
+                        </button>
+                        <button type="button" class="btn btn-primary fw-bold d-flex align-items-center gap-1" onclick="window.print()">
+                            <span>🖨️</span> Print
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (selectedTeam == null)
+        {
+            <hr class="my-4" />
+            <div>
+                <h6 class="font-weight-bold text-muted mb-3">Or quick select a team below:</h6>
+                <div class="row g-2">
+                    @foreach (var team in Model.AllTeams)
+                    {
+                        <div class="col-md-3 col-sm-6">
+                            <a class="btn btn-outline-primary w-100 text-truncate text-start py-2" asp-action="TeamDetails" asp-route-teamId="@team.Id">
+                                🛡️ <strong>@team.Name</strong> <small class="text-muted">(@team.ShortCode)</small>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Printable Report Container -->
+    @if (selectedTeam != null)
+    {
+        <div id="reportContainer" class="report-sheet bg-white p-4 shadow-sm mx-auto">
+            <!-- Top Logo & Title Box -->
+            <div class="text-center mb-3">
+                @if (!string.IsNullOrEmpty(settings.LogoUrl))
+                {
+                    <div class="mb-2">
+                        <img src="@settings.LogoUrl" alt="Logo" class="report-logo" style="max-height: 70px; object-fit: contain;" />
+                    </div>
+                }
+                <div class="report-title-box">
+                    BCL Team Player List 2026, Session 14
+                </div>
+            </div>
+
+            <!-- Team Player Table -->
+            <div class="table-responsive">
+                <table class="report-table w-100">
+                    <thead>
+                        <!-- Team Name Header Row -->
+                        <tr class="team-header-row">
+                            <th colspan="12" class="team-header-cell">
+                                @selectedTeam.Name
+                            </th>
+                        </tr>
+                        <!-- Column Headers: SL | Player Regi. No. | Player Image | Player Name | Role | Batting Style | Bowling Style | Mobile | Jersey Name | Jersey Size | Jersey Number | Note -->
+                        <tr class="column-header-row">
+                            <th style="width: 4%;">SL</th>
+                            <th style="width: 10%;">Player Regi. No.</th>
+                            <th style="width: 9%;">Player Image</th>
+                            <th style="width: 17%;">Player Name</th>
+                            <th style="width: 10%;">Role</th>
+                            <th style="width: 9%;">Batting Style</th>
+                            <th style="width: 9%;">Bowling Style</th>
+                            <th style="width: 10%;">Mobile</th>
+                            <th style="width: 8%;">Jersey Name</th>
+                            <th style="width: 5%;">Jersey Size</th>
+                            <th style="width: 5%;">Jersey Number</th>
+                            <th style="width: 4%;">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.TeamPlayers.Count > 0)
+                        {
+                            int sl = 1;
+                            @foreach (var player in Model.TeamPlayers)
+                            {
+                                <tr>
+                                    <td class="text-center">@sl</td>
+                                    <td class="text-center font-monospace">@player.Id</td>
+                                    <td class="text-center py-1">
+                                        @if (!string.IsNullOrEmpty(player.ProfilePictureUrl))
+                                        {
+                                            <img src="@player.ProfilePictureUrl" alt="@player.FullName" class="player-photo" />
+                                        }
+                                        else
+                                        {
+                                            <div class="photo-placeholder">👤</div>
+                                        }
+                                    </td>
+                                    <td class="text-start px-2 fw-semibold">@player.FullName</td>
+                                    <td class="text-center">@player.Role</td>
+                                    <td class="text-center">@(string.IsNullOrEmpty(player.BattingStyle) ? "-" : player.BattingStyle)</td>
+                                    <td class="text-center">@(string.IsNullOrEmpty(player.BowlingStyle) ? "-" : player.BowlingStyle)</td>
+                                    <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.MobileNumber) ? "-" : player.MobileNumber)</td>
+                                    <td class="text-center">@(string.IsNullOrEmpty(player.JerseyName) ? "-" : player.JerseyName)</td>
+                                    <td class="text-center">@(string.IsNullOrEmpty(player.JerseySize) ? "-" : player.JerseySize)</td>
+                                    <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.JerseyNumber) ? "-" : player.JerseyNumber)</td>
+                                    <td class="text-center"></td>
+                                </tr>
+                                sl++;
+                            }
+                        }
+                        else
+                        {
+                            <!-- Blank template rows if no players assigned yet -->
+                            for (int i = 1; i <= 3; i++)
+                            {
+                                <tr class="empty-row">
+                                    <td class="text-center">@i</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.TeamPlayers.Count == 0)
+            {
+                <div class="d-print-none alert alert-light border mt-3 small text-muted text-center">
+                    💡 No players have been acquired by this team in auction yet. Showing 3 blank rows matching the official printable template.
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    /* Official Report Styling matching reference sheet */
+    .report-sheet {
+        max-width: 1200px;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    .report-title-box {
+        display: inline-block;
+        border: 2px solid #000;
+        padding: 8px 32px;
+        font-size: 1.15rem;
+        font-weight: bold;
+        color: #000;
+        letter-spacing: 0.5px;
+        background-color: #fff;
+    }
+
+    .report-table {
+        border-collapse: collapse;
+        border: 2px solid #000;
+        font-size: 0.82rem;
+        color: #000;
+        background: #fff;
+    }
+
+    .report-table th,
+    .report-table td {
+        border: 1px solid #000;
+        padding: 6px 4px;
+        vertical-align: middle;
+    }
+
+    .team-header-row th {
+        background-color: #f7f7f7;
+        font-size: 1rem;
+        font-weight: bold;
+        text-align: center;
+        padding: 8px;
+        border: 1px solid #000;
+        border-top: 2px solid #000;
+    }
+
+    .column-header-row th {
+        background-color: #fff;
+        font-weight: bold;
+        text-align: center;
+        padding: 6px 3px;
+        border: 1px solid #000;
+        font-size: 0.8rem;
+    }
+
+    .player-photo {
+        width: 34px;
+        height: 34px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #888;
+        display: inline-block;
+    }
+
+    .photo-placeholder {
+        width: 34px;
+        height: 34px;
+        line-height: 34px;
+        text-align: center;
+        background: #eee;
+        border-radius: 4px;
+        display: inline-block;
+        font-size: 16px;
+    }
+
+    .empty-row td {
+        height: 36px;
+    }
+
+    /* Print media optimization */
+    @@media print {
+        body {
+            background: #fff !important;
+            font-size: 10pt !important;
+        }
+
+        .site-nav,
+        footer,
+        .d-print-none {
+            display: none !important;
+        }
+
+        .report-sheet {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        .report-table {
+            width: 100% !important;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        @@page {
+            size: A4 landscape;
+            margin: 8mm 6mm;
+        }
+    }
+</style>
+
+@if (selectedTeam != null)
+{
+    @section Scripts {
+        <script src="~/js/html2pdf.bundle.min.js"></script>
+        <script>
+            function exportToPdf() {
+                const btn = document.getElementById('btnExportPdf');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span>⏳</span> Generating PDF...';
+                btn.disabled = true;
+
+                const element = document.getElementById('reportContainer');
+                const opt = {
+                    margin: [6, 6, 6, 6],
+                    filename: 'BCL_Team_Details_@(selectedTeam.ShortCode)_2026.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                };
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }).catch(err => {
+                    console.error(err);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    alert('Could not export to PDF. Please try Print Report instead.');
+                });
+            }
+        </script>
+    }
+}

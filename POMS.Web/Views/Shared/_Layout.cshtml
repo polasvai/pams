@@ -91,6 +91,15 @@ else
                             📅 Schedule
                         </a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle @(currentPath.StartsWith("/Reports", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            📊 Reports
+                        </a>
+                        <ul class="dropdown-menu shadow-sm" aria-labelledby="reportsDropdown">
+                            <li><a class="dropdown-item @(currentPath.StartsWith("/Reports/PlayerCategoryList", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Reports" asp-action="PlayerCategoryList">Player Category List</a></li>
+                            <li><a class="dropdown-item @(currentPath.StartsWith("/Reports/TeamDetails", StringComparison.OrdinalIgnoreCase) ? "active" : "")" asp-controller="Reports" asp-action="TeamDetails">Team Details</a></li>
+                        </ul>
+                    </li>
                     @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                     {
                         <li class="nav-item">
