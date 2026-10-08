@@ -56,15 +56,15 @@
                             </th>
                         </tr>
                         <tr class="column-header-row">
-                            <th style="width: 5%;">SL</th>
-                            <th style="width: 5%;">Player Regi. No.</th>
-                            <th style="width: 11%;">Player Image</th>
-                            <th style="width: 22%;">Player Name</th>
-                            <th style="width: 12%;">Role</th>
-                            <th style="width: 11%;">Batting Style</th>
-                            <th style="width: 11%;">Bowling Style</th>
-                            <th style="width: 11%;">Mobile</th>
-                            <th style="width: 17%;">Current Team</th>
+                            <th style="width: 4%;">SL</th>
+                            <th style="width: 6%;">Player Regi. No.</th>
+                            <th style="width: 10%;">Player Image</th>
+                            <th style="width: 20%;">Player Name</th>
+                            <th style="width: 11%;">Role</th>
+                            <th style="width: 9%;">Batting Style</th>
+                            <th style="width: 9%;">Bowling Style</th>
+                            <th style="width: 12%;">Mobile</th>
+                            <th style="width: 19%;">Current Team</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -93,16 +93,20 @@
                                     <td class="text-center">@(string.IsNullOrEmpty(player.BattingStyle) ? "-" : player.BattingStyle)</td>
                                     <td class="text-center">@(string.IsNullOrEmpty(player.BowlingStyle) ? "-" : player.BowlingStyle)</td>
                                     <td class="text-center font-monospace">@(string.IsNullOrEmpty(player.MobileNumber) ? "-" : player.MobileNumber)</td>
-                                    <td class="text-center">
+                                    <td class="text-center team-cell px-1">
                                         @if (currentTeam != null)
                                         {
-                                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1 fw-bold">
-                                                @currentTeam.Name @(string.IsNullOrEmpty(currentTeam.ShortCode) ? "" : $"({currentTeam.ShortCode})")
-                                            </span>
+                                            <div class="team-badge">
+                                                <span class="team-name">@currentTeam.Name</span>
+                                                @if (!string.IsNullOrEmpty(currentTeam.ShortCode))
+                                                {
+                                                    <span class="team-code">(@currentTeam.ShortCode)</span>
+                                                }
+                                            </div>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-light text-muted border px-2 py-1">Unsold</span>
+                                            <span class="unsold-text">Unsold</span>
                                         }
                                     </td>
                                 </tr>
@@ -141,7 +145,7 @@
 <style>
     /* Official Report Styling matching reference sheet */
     .report-sheet {
-        max-width: 1100px;
+        max-width: 1200px;
         background: #fff;
         border: 1px solid #dee2e6;
         font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
@@ -164,6 +168,7 @@
         font-size: 0.85rem;
         color: #000;
         background: #fff;
+        table-layout: fixed;
     }
 
     .report-table th,
@@ -171,6 +176,8 @@
         border: 1px solid #000;
         padding: 5px 6px;
         vertical-align: middle;
+        overflow-wrap: break-word;
+        word-break: normal;
     }
 
     .category-header-row th {
@@ -215,11 +222,56 @@
         height: 32px;
     }
 
+    /* Current Team badge styling with text wrapping */
+    .team-cell {
+        word-break: normal;
+        overflow-wrap: break-word;
+        white-space: normal !important;
+        vertical-align: middle;
+        line-height: 1.25;
+    }
+
+    .team-badge {
+        display: inline-block;
+        padding: 3px 6px;
+        background-color: #e8f5e9;
+        border: 1px solid #81c784;
+        border-radius: 4px;
+        color: #1b5e20;
+        font-size: 0.78rem;
+        font-weight: 700;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .team-name {
+        display: block;
+        line-height: 1.2;
+    }
+
+    .team-code {
+        display: block;
+        font-size: 0.72rem;
+        color: #2e7d32;
+        font-weight: 600;
+        margin-top: 1px;
+    }
+
+    .unsold-text {
+        display: inline-block;
+        padding: 2px 6px;
+        background-color: #f5f5f5;
+        border: 1px solid #d6d6d6;
+        border-radius: 4px;
+        color: #757575;
+        font-size: 0.75rem;
+    }
+
     /* Print media optimization */
     @@media print {
         body {
             background: #fff !important;
-            font-size: 11pt !important;
+            font-size: 10pt !important;
         }
 
         .site-nav,
@@ -249,8 +301,8 @@
         }
 
         @@page {
-            size: A4 portrait;
-            margin: 10mm 8mm;
+            size: A4 landscape;
+            margin: 8mm 6mm;
         }
     }
 </style>
@@ -266,11 +318,12 @@
 
             const element = document.getElementById('reportContainer');
             const opt = {
-                margin: [8, 8, 8, 8],
+                margin: [6, 6, 6, 6],
                 filename: 'BCL_Player_Category_List_2026.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                pagebreak: { mode: ['css', 'legacy'] }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
