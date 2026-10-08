@@ -114,9 +114,8 @@ else
             var categoryButtons = document.querySelectorAll('.category-filter-btn');
             var playerItems = document.querySelectorAll('.player-select-item');
             var playerCheckboxes = document.querySelectorAll('.player-select-checkbox');
-            var selectedCountSpan = document.getElementById('selectedPlayerCount');
-            var submitBtn = document.getElementById('addPlayersSubmitBtn');
-            var submitCountSpan = document.getElementById('submitBtnPlayerCount');
+            var submitBtns = document.querySelectorAll('#addPlayersSubmitBtn, button[type="submit"].add-players-btn');
+            var submitCountSpans = document.querySelectorAll('#submitBtnPlayerCount, .submit-btn-player-count');
             var noMatchingMsg = document.getElementById('noMatchingPlayersMsg');
 
             var currentCategory = 'ALL';
@@ -142,11 +141,11 @@ else
                 }
 
                 if (selectedCountSpan) selectedCountSpan.textContent = checkedCount;
-                if (submitCountSpan) submitCountSpan.textContent = checkedCount;
+                submitCountSpans.forEach(function (el) { el.textContent = checkedCount; });
 
-                if (submitBtn) {
-                    submitBtn.disabled = checkedCount === 0;
-                }
+                submitBtns.forEach(function (btn) {
+                    btn.disabled = checkedCount === 0;
+                });
 
                 if (selectAllCheckbox) {
                     if (visibleCount === 0) {

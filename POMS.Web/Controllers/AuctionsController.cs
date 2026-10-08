@@ -64,27 +64,52 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
         return auction is null ? NotFound() : View(auction);
     }
     [HttpPost]
-    public async Task<IActionResult> AddPlayers(int id, int[] playerIds, CancellationToken ct)
+    public async Task<IActionResult> AddPlayers(int id, int[] playerIds, string? returnUrl, CancellationToken ct)
     {
         var auction = await db.Auctions.Include(a => a.AuctionPlayers).FirstOrDefaultAsync(a => a.Id == id, ct);
-        if (auction is null || auction.Status != AuctionStatus.Draft)
+        if (auction is null)
         {
-            TempData["Error"] = "Players can only be added to draft auctions.";
-            return RedirectToAction(nameof(Details), new
-            {
-                id
-            });
+            TempData["Error"] = "Auction was not found.";
+            return RedirectToAction(nameof(Index));
         }
-        var nextLot = auction.AuctionPlayers.Count + 1;
-        foreach (var playerId in (playerIds ?? Array.Empty<int>()).Distinct())
-            if (!await db.AuctionPlayers.AnyAsync(x => x.AuctionId == id && x.PlayerId == playerId, ct))
-                db.AuctionPlayers.Add(new AuctionPlayer { AuctionId = id, PlayerId = playerId, LotNumber = nextLot++ });
-        await db.SaveChangesAsync(ct);
-        TempData["Success"] = "Players added to auction.";
-        return RedirectToAction(nameof(Details), new
+
+        if (auction.Status == AuctionStatus.Completed)
         {
-            id
-        });
+            TempData["Error"] = "Cannot add players to a completed auction.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var currentMaxLot = auction.AuctionPlayers.Count > 0 
+            ? auction.AuctionPlayers.Max(ap => ap.LotNumber) 
+            : 0;
+        var nextLot = currentMaxLot + 1;
+        int addedCount = 0;
+
+        foreach (var playerId in (playerIds ?? Array.Empty<int>()).Distinct())
+        {
+            if (!await db.AuctionPlayers.AnyAsync(x => x.AuctionId == id && x.PlayerId == playerId, ct))
+            {
+                db.AuctionPlayers.Add(new AuctionPlayer { AuctionId = id, PlayerId = playerId, LotNumber = nextLot++ });
+                addedCount++;
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+        TempData["Success"] = addedCount > 0 
+            ? $"{addedCount} player(s) successfully added to auction pool." 
+            : "No new players were added.";
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+
+        if (auction.Status == AuctionStatus.Live || auction.Status == AuctionStatus.Paused)
+        {
+            return RedirectToAction(nameof(Live), new { id });
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
     }
     [HttpPost]
     public async Task<IActionResult> Start(int id, CancellationToken ct)

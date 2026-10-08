@@ -133,8 +133,8 @@
                 </div>
             </div>
 
-            <!-- Add Players Form (Only for Draft state) -->
-            @if (Model.Status == AuctionStatus.Draft)
+            <!-- Add Players Form (Draft, Live, or Paused) -->
+            @if (Model.Status != AuctionStatus.Completed)
             {
                 <div class="card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
