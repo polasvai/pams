@@ -175,4 +175,16 @@ public class AuctionsController(ApplicationDbContext db, AuctionService auctionS
             id
         });
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SellPlayer(int id, int lotId, int teamId, decimal amount, CancellationToken ct)
+    {
+        var result = await auctionService.SellPlayerToTeamAsync(id, lotId, teamId, amount, User.Identity?.Name, ct);
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(Live), new
+        {
+            id
+        });
+    }
 }

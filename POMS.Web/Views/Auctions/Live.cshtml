@@ -147,19 +147,19 @@ else
             {
                 if (User.Identity?.IsAuthenticated == true)
                 {
-                    <div class="card p-4 mt-4">
+                    <div class="card p-4 mt-4 shadow-sm border-2">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="h5 mb-0 font-weight-bold">💰 Place Bid</h3>
+                            <h3 class="h5 mb-0 font-weight-bold">🔨 Sell Player to Team</h3>
                             <span class="badge bg-light text-dark border">
-                                Minimum Next Bid: <strong>৳@minBidAmount.ToString("N0")</strong>
+                                Base Price: <strong>৳@current.Player.BasePrice.ToString("N0")</strong>
                             </span>
                         </div>
 
-                        <form asp-action="PlaceBid" asp-route-id="@Model.Id" method="post" id="bidForm">
+                        <form asp-action="SellPlayer" asp-route-id="@Model.Id" method="post" id="sellPlayerForm">
                             <input type="hidden" name="lotId" value="@current.Id" />
                             <div class="row g-3 align-items-end">
-                                <div class="col-lg-6">
-                                    <label class="form-label font-weight-bold">Bidding Team</label>
+                                <div class="col-lg-5">
+                                    <label class="form-label font-weight-bold">Select Team</label>
                                     <select name="teamId" class="form-select form-select-lg" required>
                                         <option value="">-- Select Team --</option>
                                         @foreach (var team in teams)
@@ -169,14 +169,13 @@ else
                                     </select>
                                 </div>
                                 <div class="col-lg-4">
-                                    <label class="form-label font-weight-bold">Bid Amount (৳)</label>
-                                    @{
-                                        var currentMinBid = highest?.Amount + 1 ?? current.Player.BasePrice;
-                                    }
-                                    <input name="amount" id="bidAmountInput" type="number" step="any" min="@currentMinBid" value="@currentMinBid" class="form-control form-control-lg" required />
+                                    <label class="form-label font-weight-bold">Bid / Sold Amount (৳)</label>
+                                    <input name="amount" id="bidAmountInput" type="number" step="any" min="0" value="@current.Player.BasePrice" class="form-control form-control-lg" required />
                                 </div>
-                                <div class="col-lg-2">
-                                    <button class="btn btn-primary btn-lg w-100 font-weight-bold" type="submit">Bid Now</button>
+                                <div class="col-lg-3">
+                                    <button class="btn btn-success btn-lg w-100 font-weight-bold shadow-sm" type="submit">
+                                        🔨 Sold to Selected Team
+                                    </button>
                                 </div>
                             </div>
                         </form>
@@ -197,21 +196,13 @@ else
 
                         <!-- Lot Conclusion Actions -->
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                            <span class="text-muted small">Conclude this lot:</span>
-                            <div class="d-flex gap-2">
-                                <form asp-action="FinishPlayer" asp-route-id="@Model.Id" method="post">
-                                    <input type="hidden" name="sold" value="true" />
-                                    <button class="btn btn-success font-weight-bold px-4" type="submit" @(highest is null ? "disabled title='Requires a bid to sell'" : "")>
-                                        🔨 Sell Player to @(highest?.Team.Name ?? "Highest Bidder")
-                                    </button>
-                                </form>
-                                <form asp-action="FinishPlayer" asp-route-id="@Model.Id" method="post">
-                                    <input type="hidden" name="sold" value="false" />
-                                    <button class="btn btn-outline-danger font-weight-bold px-3" type="submit">
-                                        ❌ Mark Unsold
-                                    </button>
-                                </form>
-                            </div>
+                            <span class="text-muted small">No buyers for this player?</span>
+                            <form asp-action="FinishPlayer" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Are you sure you want to mark this player as UNSOLD?');">
+                                <input type="hidden" name="sold" value="false" />
+                                <button class="btn btn-outline-danger font-weight-bold px-3" type="submit">
+                                    ❌ Mark Unsold
+                                </button>
+                            </form>
                         </div>
                     </div>
                 }
@@ -400,19 +391,6 @@ else
 
 @section Scripts {
     <script>
-        // Auto-refresh live status every 10 seconds if auction is Live
-        @if (Model?.Status == AuctionStatus.Live && current is not null)
-        {
-            <text>
-            setInterval(function () {
-                // Only refresh if user is not actively typing in an input field
-                if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
-                    location.reload();
-                }
-            }, 10000);
-            </text>
-        }
-
         // Live Search and Category Filter for Lot Queue
         (function () {
             function initQueueFilter() {

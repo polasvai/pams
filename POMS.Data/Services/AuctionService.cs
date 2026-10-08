@@ -110,6 +110,44 @@ public sealed class AuctionService(ApplicationDbContext db)
         return Ok(sold ? "Player sold." : "Player marked unsold.");
     }
 
+    public async Task<AuctionServiceResult> SellPlayerToTeamAsync(int id, int lotId, int teamId, decimal amount, string? userId = null, CancellationToken ct = default)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var auction = await db.Auctions.FindAsync([id], ct);
+        if (auction is null)
+            return Fail("Auction was not found.");
+        if (auction.Status != AuctionStatus.Live || auction.CurrentAuctionPlayerId != lotId)
+            return Fail("This player is not open on the auction block.");
+        var lot = await db.AuctionPlayers.Include(x => x.Player).FirstOrDefaultAsync(x => x.Id == lotId, ct);
+        var team = await db.Teams.FindAsync([teamId], ct);
+        if (lot is null || team is null)
+            return Fail("The player or team was not found.");
+
+        if (amount > team.TotalBudget)
+            return Fail($"The amount of ৳{amount:N0} exceeds {team.Name}'s remaining budget of ৳{team.TotalBudget:N0}.");
+
+        // Record winning bid for history/audit
+        await db.Bids.Where(b => b.AuctionPlayerId == lotId && b.IsWinning).ExecuteUpdateAsync(s => s.SetProperty(b => b.IsWinning, false), ct);
+        db.Bids.Add(new Bid
+        {
+            AuctionPlayerId = lotId,
+            TeamId = teamId,
+            Amount = amount,
+            IsWinning = true,
+            PlacedByUserId = userId,
+            PlacedAt = DateTimeOffset.UtcNow
+        });
+
+        lot.Status = AuctionPlayerStatus.Sold;
+        lot.SoldPrice = amount;
+        lot.TeamId = teamId;
+        auction.CurrentAuctionPlayerId = null;
+
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return Ok($"Player {lot.Player.FullName} sold to {team.Name} for ৳{amount:N0}.");
+    }
+
     private static AuctionServiceResult Ok(string message) => new(true, message);
     private static AuctionServiceResult Fail(string message) => new(false, message);
 }
