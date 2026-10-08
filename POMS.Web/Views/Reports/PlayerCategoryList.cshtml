@@ -56,10 +56,10 @@
                             </th>
                         </tr>
                         <tr class="column-header-row">
-                            <th style="width: 4%;">SL</th>
-                            <th style="width: 6%;">Reg. No</th>
+                            <th style="width: 3%;">SL</th>
+                            <th style="width: 4%;">Reg. No</th>
                             <th style="width: 10%;">Image</th>
-                            <th style="width: 18%;">Player Name</th>
+                            <th style="width: 21%;">Player Name</th>
                             <th style="width: 11%;">Role</th>
                             <th style="width: 10%;">Batting</th>
                             <th style="width: 10%;">Bowling</th>
@@ -76,8 +76,8 @@
                                 var player = item.Player;
                                 var currentTeam = item.CurrentTeam;
                                 <tr>
-                                    <td class="text-center font-monospace">@sl</td>
-                                    <td class="text-center font-monospace">@player.Id</td>
+                                    <td class="text-center font-monospace sl-cell">@sl</td>
+                                    <td class="text-center font-monospace regi-cell">@player.Id</td>
                                     <td class="text-center py-1">
                                         @if (!string.IsNullOrEmpty(player.ProfilePictureUrl))
                                         {
@@ -219,9 +219,17 @@
         font-size: 16px;
     }
 
+    .sl-cell, .regi-cell {
+        padding: 4px 1px !important;
+        font-size: 0.72rem;
+        white-space: nowrap;
+    }
+
     .player-name-cell {
-        font-size: 0.76rem;
-        line-height: 1.2;
+        font-size: 0.80rem;
+        line-height: 1.25;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
     }
 
     .mobile-cell {

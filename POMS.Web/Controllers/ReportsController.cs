@@ -342,16 +342,16 @@ public class ReportsController : Controller
             currentRow++;
         }
 
-        ws.Columns(1, 9).AdjustToContents(10.0, 40.0);
-        ws.Column(1).Width = 8;
-        ws.Column(2).Width = 18;
-        ws.Column(3).Width = 14;
-        ws.Column(4).Width = 26;
+        ws.Columns(1, 9).AdjustToContents(8.0, 40.0);
+        ws.Column(1).Width = 6;
+        ws.Column(2).Width = 14;
+        ws.Column(3).Width = 13;
+        ws.Column(4).Width = 32;
         ws.Column(5).Width = 16;
-        ws.Column(6).Width = 16;
-        ws.Column(7).Width = 16;
+        ws.Column(6).Width = 15;
+        ws.Column(7).Width = 15;
         ws.Column(8).Width = 18;
-        ws.Column(9).Width = 14;
+        ws.Column(9).Width = 18;
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
